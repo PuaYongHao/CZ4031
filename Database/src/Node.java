@@ -54,23 +54,23 @@ public class Node {
 
 		int i;
 		// Start from first element
-		for (i = 0; i <= keys.size() - 1; i++) {
-			// If key is greater than current element
+		for (i = 0; i < keys.size(); i++) {
+			// If key is smaller than current element
 			if (key < keys.get(i)) {
-				// Insert the key to the back of this element
+				// Insert the key to the front of this element
 				keys.add(i, key);
 				return i;
 			}	
 		}
 		
-		// Add key to the back if it is the largest value
+		// Add key to the back since it is the largest value
 		keys.add(key);
 		return i;
 	}
 	
 	// Delete all keys in this node
 	public void deleteKeys() {
-		keys = new ArrayList<Integer>;
+		keys = new ArrayList<Integer>();
 	}
 	
 	// Delete key at certain index from this node
