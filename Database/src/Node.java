@@ -1,15 +1,15 @@
 import java.util.ArrayList;
 
-public class Node {
+public abstract class Node {
 
 	private boolean isLeaf;
 	private boolean isRoot;
+	private ParentNode parentNode;
 	private ArrayList<Integer> keys;
-	
-	// Check parentnode, findSmallestKey, deleteNode
 	
 	// Constructor
 	public Node() {
+		keys = new ArrayList<Integer>();
 		isLeaf = false;
 		isRoot = false;
 	}
@@ -34,16 +34,27 @@ public class Node {
 		this.isRoot = isRoot;
 	}
 	
+    // Get parent node of this node 
+    public ParentNode getParentNode() {
+        return parentNode;
+    }
+
+    // Set parent node of this node 
+    public void setParentNode(ParentNode parentNode) {
+    	this.parentNode = parentNode;
+    }
+	
 	// Get all keys in this node
 	public ArrayList<Integer> getKeys() {
 		return keys;
 	}
 	
-	// Get key at certain index from this node
+	// Get key at given index from this node
 	public int getKeyAtIndex(int index) {
 		return keys.get(index);
 	}
 	
+	// NEED TO REVIEW WITH OTHERS
 	// Add key in ascending order to the node and return index
 	public int addKey(int key) {
 		// If node is empty
@@ -54,17 +65,17 @@ public class Node {
 
 		int i;
 		// Start from first element
-		for (i = 0; i < keys.size(); i++) {
+		for (i = 0; i < this.keys.size(); i++) {
 			// If key is smaller than current element
-			if (key < keys.get(i)) {
+			if (key < this.keys.get(i)) {
 				// Insert the key to the front of this element
-				keys.add(i, key);
+				this.keys.add(i, key);
 				return i;
 			}	
 		}
 		
 		// Add key to the back since it is the largest value
-		keys.add(key);
+		this.keys.add(key);
 		return i;
 	}
 	
@@ -73,20 +84,27 @@ public class Node {
 		keys = new ArrayList<Integer>();
 	}
 	
-	// Delete key at certain index from this node
+	// Delete key at given index from this node
 	public void deleteKeyAtIndex(int index) {
 		keys.remove(index);
 	}
 	
+	// NEED TO REVIEW WITH OTHERS
 	// Find smallest key
-	public int findSmallestKey() {
-		int key = -1;
-		
-		// If current node is  leaf
-		if (this.getIsLeaf()) 
-			key = this.getKeyAtIndex(0);
-		
-		return key;
+	public abstract int findSmallestKey();
+	
+	// NEED TO REVIEW WITH OTHERS
+	// Delete node
+	public void deleteNode() {
+		// If there exist a parent node
+		if (this.getParentNode() != null) {
+			// Delete current leaf node from the parent node and reset its keys
+			this.getParentNode().deleteChildNode(this);
+			this.setParentNode(null);
+		}
+		isLeaf = false;
+		isRoot = false;
+		keys = new ArrayList<Integer>();
 	}
 	
 }
