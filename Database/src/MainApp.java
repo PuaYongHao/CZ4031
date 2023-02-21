@@ -6,7 +6,7 @@ import java.util.*;
 import app.storage.Address;
 import app.storage.Disk;
 import app.storage.Record;
-import app.index.BPlusTree;
+import Index.BPlusTree;
 import app.util.Log;
 import app.util.Utility;
 

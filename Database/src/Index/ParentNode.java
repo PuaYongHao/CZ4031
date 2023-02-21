@@ -1,3 +1,5 @@
+package Index;
+
 import java.util.ArrayList;
 
 public class ParentNode extends Node {
@@ -36,7 +38,7 @@ public class ParentNode extends Node {
     	int currentSmallest = this.findSmallestKey();
     	int i;
     
-    	// Node that is going to be added has smaller key value
+    	// Index.Node that is going to be added has smaller key value
     	if (key < currentSmallest) {
     		// The leftmost child node key value is added
     		this.addKey(currentSmallest);
