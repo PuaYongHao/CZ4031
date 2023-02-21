@@ -35,13 +35,6 @@ public class Record {
         this.numVotes = numVotes;
     }
 
-    /**
-     * Theoretical size in bytes with assumption of...
-     * - tconst is fixed with 10 chars -> 10B
-     * - avgRating is float -> 4B
-     * - numVote is int -> 4B
-     * @return size of record
-     */
     public static int size(){
         return 18;
     }
