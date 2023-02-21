@@ -116,33 +116,6 @@ public class Disk {
         return getRecordAt(address.getBlockId(), address.getOffset());
     }
 
-    public ArrayList<Record> getRecords(ArrayList<Address> addresses ){
-        //addresses.sort(Comparator.comparingInt(Address::getBlockId));
-        HashMap<Integer, Block> cache = new HashMap<>();
-        ArrayList<Record> records = new ArrayList<>();
-        int blockAccess = 0;
-        Block tempBlock = null;
-        for (Address address: addresses) {
-            // try search from cache first, before access from disk
-            tempBlock = cache.get(address.getBlockId());
-            boolean cacheRead = tempBlock != null;
-            if (tempBlock == null){
-                tempBlock = getBlockAt(address.getBlockId());
-//                Log.v("Disk Access", String.format("Disk read: blockId=%d, offset=%d, block=%s", address.blockId, address.offset, tempBlock));
-                cache.put(address.getBlockId(), tempBlock);
-                blockAccess++;
-            } else {// accessing the block from cache, no block access
-//                Log.v("Disk Access", String.format("Cache read: blockId=%d, offset=%d, block=%s", address.blockId, address.offset, tempBlock));
-            }
-
-            Record record = tempBlock.getRecordAt(address.getOffset());
-//            Log.v("Disk Access", String.format("%s read: blockId=%4d, \toffset=%d, \trecord=%s", cacheRead?"Cache":"Disk", address.blockId, address.offset, record));
-            records.add( record );
-        }
-//        Log.i(TAG, String.format("Retrieved %d records with %d block access", records.size(), blockAccess));
-        return records;
-    }
-
 
 
 
