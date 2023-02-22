@@ -1,5 +1,6 @@
 package Index;
 
+import Storage.Address;
 import java.util.ArrayList;
 
 public class LeafNode extends Node {
@@ -12,7 +13,7 @@ public class LeafNode extends Node {
 		super();
 		next = null;
 		setIsLeaf(true);
-		records = new ArrayList<Addrress>();
+		records = new ArrayList<Address>();
 	}
 	
     // Get next leaf node
