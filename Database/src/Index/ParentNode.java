@@ -19,7 +19,7 @@ public class ParentNode extends Node {
     }
 
     // Get child node at given index in this parent node
-    public Node getChild(int index) {
+    public Node getChildNodeAtIndex(int index) {
         return childNodes.get(index);
     }
     
