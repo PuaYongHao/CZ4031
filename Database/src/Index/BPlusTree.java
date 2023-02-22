@@ -54,7 +54,7 @@ public class BPlusTree {
         ParentNode currentNode = (ParentNode) root;
         ArrayList<Integer> keys;
         //Transverse the tree to find the parent of the leafnode that the record should be stored at
-        while (!currentNode.getChild(0).getIsLeaf()) {
+        while (!currentNode.getChildNodeAtIndex(0).getIsLeaf()) {
 
             keys = currentNode.getKeys();
         
@@ -63,12 +63,12 @@ public class BPlusTree {
 
                 if (keys.get(i) <= key) {
 
-                    currentNode = (ParentNode) currentNode.getChild(i+1);
+                    currentNode = (ParentNode) currentNode.getChildNodeAtIndex(i+1);
                     break;
                 }
                 //if i is equal 0, means is smaller than every key
                 if(i == 0) {
-                    currentNode = (ParentNode) currentNode.getChild(0);
+                    currentNode = (ParentNode) currentNode.getChildNodeAtIndex(0);
                     break;
                 }
             }
@@ -79,10 +79,10 @@ public class BPlusTree {
         for (int i = keys.size() - 1; i >= 0 ; i--) {
 
             if (keys.get(i) <= key)
-                return (LeafNode) currentNode.getChild(i+1);
+                return (LeafNode) currentNode.getChildNodeAtIndex(i+1);
         }
 
-        return (LeafNode) currentNode.getChild(0);
+        return (LeafNode) currentNode.getChildNodeAtIndex(0);
     }
     // to insert record into leafnode
     public void insertToLeaf(LeafNode leaf, int key, Address address) {
@@ -171,7 +171,7 @@ public class BPlusTree {
         // getting full and sorted lists of keys and children
         for (int i = 0; i < maxKeys+1; i++)  {
 
-            children[i] = parent.getChild(i);
+            children[i] = parent.getChildNodeAtIndex(i);
             tempKeys[i] = children[i].findSmallestKey();
         }
         
@@ -390,7 +390,7 @@ public class BPlusTree {
             if (parent.getChildNodes().size() > 1) {
 
                 // lazy man's reset
-                Node child = parent.getChild(0);
+                Node child = parent.getChildNodeAtIndex(0);
                 parent.deleteChildNode(child);
                 parent.addChildNode(child);
                 return;
@@ -399,8 +399,8 @@ public class BPlusTree {
             // if root has 1 child, delete root level
             else {
 
-                parent.getChild(0).setIsRoot(true);
-                root = parent.getChild(0);
+                parent.getChildNodeAtIndex(0).setIsRoot(true);
+                root = parent.getChildNodeAtIndex(0);
                 parent.deleteNode();
                 deletedCount++;
                 height--;
@@ -431,25 +431,25 @@ public class BPlusTree {
 
                 // insert as many records as possible into before node
                 for (int i = 0; i < maxKeys-(bExtra+parentMinKeys)+1 && i < parent.getChildNodes().size(); i++) 
-                    before.addChildNode(parent.getChild(i));
+                    before.addChildNode(parent.getChildNodeAtIndex(i));
                 
                 // insert the rest into after node
                 for (int i = maxKeys-(bExtra+parentMinKeys)+1; i < parent.getChildNodes().size(); i++) 
-                    after.addChildNode(parent.getChild(i));
+                    after.addChildNode(parent.getChildNodeAtIndex(i));
             }
 
             // if node only has after node
             else if (before == null) {
 
                 for (int i = 0; i < parent.getChildNodes().size(); i++) 
-                    after.addChildNode(parent.getChild(i));
+                    after.addChildNode(parent.getChildNodeAtIndex(i));
             }
 
             // if node only has before node
             else {
 
                 for (int i = 0; i < parent.getChildNodes().size(); i++) 
-                    before.addChildNode(parent.getChild(i));
+                    before.addChildNode(parent.getChildNodeAtIndex(i));
             }
 
             // delete after merging
@@ -466,15 +466,15 @@ public class BPlusTree {
                 // take the last few keys from before node that can be spared
                 for (int i = 0; i < bExtra && i < needed; i++) {
 
-                    parent.addChildNodeAtFirstIndex(before.getChild(before.getChildNodes().size()-1));
-                    before.deleteChildNode(before.getChild(before.getChildNodes().size()-1));
+                    parent.addChildNodeAtFirstIndex(before.getChildNodeAtIndex(before.getChildNodes().size()-1));
+                    before.deleteChildNode(before.getChildNodeAtIndex(before.getChildNodes().size()-1));
                 }
                 
                 // take the rest from after node
                 for (int i = bExtra; i < needed; i++) {
 
-                    parent.addChildNode(after.getChild(0));
-                    after.deleteChildNode(after.getChild(0));
+                    parent.addChildNode(after.getChildNodeAtIndex(0));
+                    after.deleteChildNode(after.getChildNodeAtIndex(0));
                 }
             }
 
@@ -483,8 +483,8 @@ public class BPlusTree {
                 // take all from after node
                 for (int i = 0; i < needed; i++) {
 
-                    parent.addChildNode(after.getChild(0));
-                    after.deleteChildNode(after.getChild(0));
+                    parent.addChildNode(after.getChildNodeAtIndex(0));
+                    after.deleteChildNode(after.getChildNodeAtIndex(0));
                 }
             }
 
@@ -493,8 +493,8 @@ public class BPlusTree {
                 // take all from before node
                 for (int i = 0; i < needed; i++) {
 
-                    parent.addChildNodeAtFirstIndex(before.getChild(before.getChildNodes().size()-1 -i));
-                    before.deleteChildNode(before.getChild(before.getChildNodes().size()-1 -i));
+                    parent.addChildNodeAtFirstIndex(before.getChildNodeAtIndex(before.getChildNodes().size()-1 -i));
+                    before.deleteChildNode(before.getChildNodeAtIndex(before.getChildNodes().size()-1 -i));
                 }
             }
             
@@ -531,7 +531,7 @@ public class BPlusTree {
                         //TOREMOVE: Log.v("B+Tree.keySearch", curNode.toString());
                         //TOREMOVE: Log.d("B+Tree.keySearch",String.format("[Index.Node Access] follow pointer [%d]: key(%d)<=curKey(%d)", i, key, parentNode.getKey(i) ));
                     }
-                    curNode = parentNode.getChild(i);
+                    curNode = parentNode.getChildNodeAtIndex(i);
                     blockAccess++;
                     break;
                 }
@@ -540,7 +540,7 @@ public class BPlusTree {
                         //TOREMOVE: Log.v("B+Tree.keySearch", curNode.toString());
                         //TOREMOVE: Log.d("B+Tree.keySearch",String.format("[Index.Node Access] follow pointer [%d+1]: last key and key(%d)>curKey(%d)", i, key, parentNode.getKey(i) ));
                     }
-                    curNode = parentNode.getChild(i+1);
+                    curNode = parentNode.getChildNodeAtIndex(i+1);
                     blockAccess++;
                     break;
                 }
@@ -604,7 +604,7 @@ public class BPlusTree {
                         //TOREMOVE: Log.v("B+Tree.keySearch", curNode.toString());
                         //TOREMOVE: Log.d("B+Tree.keySearch",String.format("[Index.Node Access] follow pointer [%d]: key(%d)<=curKey(%d)", i, key, parentNode.getKey(i) ));
                     }
-                    curNode = parentNode.getChild(i);
+                    curNode = parentNode.getChildNodeAtIndex(i);
                     blockAccess++;
                     break;
                 }
@@ -613,7 +613,7 @@ public class BPlusTree {
                         //TOREMOVE: Log.v("B+Tree.keySearch", curNode.toString());
                         //TOREMOVE: Log.d("B+Tree.keySearch",String.format("[Index.Node Access] follow pointer [%d+1]: last key and key(%d)>curKey(%d)", i, key, parentNode.getKey(i) ));
                     }
-                    curNode = parentNode.getChild(i+1);
+                    curNode = parentNode.getChildNodeAtIndex(i+1);
                     blockAccess++;
                     break;
                 }
@@ -670,7 +670,7 @@ public class BPlusTree {
         // searching for leaf node with key
         while (!curNode.getIsLeaf()){
             parentNode = (ParentNode) curNode;
-            curNode = parentNode.getChild(0);
+            curNode = parentNode.getChildNodeAtIndex(0);
         }
         // after leaf node is found, find all records with same key
         LeafNode curLeaf = (LeafNode) curNode;
@@ -718,7 +718,7 @@ public class BPlusTree {
         ArrayList<Integer> rootKeys = new ArrayList<Integer>();
         ArrayList<Integer> firstKeys = new ArrayList<Integer>();
         ParentNode rootCopy = (ParentNode) root;
-        Node first = rootCopy.getChild(0);
+        Node first = rootCopy.getChildNodeAtIndex(0);
 
         for (int i = 0; i < root.getKeys().size(); i++) {
 
@@ -730,9 +730,9 @@ public class BPlusTree {
             firstKeys.add(first.getKeyAtIndex(i));
         }
 
-        //TOREMOVE: Log.d("treeStats", "n = " + maxKeys + ", number of nodes = " + nodeCount + ", height = " + height);
-        //TOREMOVE: Log.d("rootContents", "root node contents = " + rootKeys);
-        //TOREMOVE: Log.d("firstContents", "first child contents = " + firstKeys);
+        System.out.println("n = " + maxKeys + ", number of nodes = " + nodeCount + ", height = " + height);
+        System.out.println("root node contents = " + rootKeys);
+        System.out.println("first child contents = " + firstKeys);
     }
 
     // TODO for Experiment 4
@@ -757,7 +757,7 @@ public class BPlusTree {
                         //TOREMOVE: Log.v("B+Tree.rangeSearch", curNode.toString());
                         //TOREMOVE: Log.d("B+Tree.rangeSearch", String.format("[Index.Node Access] follow pointer [%d]: min(%d)<=curKey(%d)", i, min, parentNode.getKey(i)));
                     }
-                    curNode = parentNode.getChild(i);
+                    curNode = parentNode.getChildNodeAtIndex(i);
                     nodeAccess++;
                     break;
                 }
@@ -766,7 +766,7 @@ public class BPlusTree {
                         //TOREMOVE: Log.v("B+Tree.rangeSearch", curNode.toString());
                         //TOREMOVE: Log.d("B+Tree.rangeSearch", String.format("[Index.Node Access] follow pointer [%d+1]: last key and min(%d)>curKey(%d)", i, min, parentNode.getKey(i)));
                     }
-                    curNode = parentNode.getChild(i+1);
+                    curNode = parentNode.getChildNodeAtIndex(i+1);
                     nodeAccess++;
                     break;
                 }
