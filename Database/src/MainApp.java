@@ -50,6 +50,7 @@ public class MainApp {
 
 	public void experiment3(){
 		System.out.println("Starting Experiment 3......");
+		System.out.println("Search for numVotes == 500 ......");
 		
 		//normal B+ scanning 
 		LocalTime timeStart = LocalTime.now(); //record start time
@@ -57,40 +58,50 @@ public class MainApp {
 		LocalTime timeEnd = LocalTime.now(); //record end time
 		System.out.println("Start: "+timeStart+" End: "+timeEnd+" time lapse: " + timeEnd.compareTo(timeStart));
 		//retrieve all the actual records inside the block
-		//ArrayList<Record> records = disk.getRecords(e3RecordAddresses);
-		//System.out.println("Number of records found: "+ records.size());
+		ArrayList<Record> records = disk.getRecords(e3RecordAddresses);
+		System.out.println("Number of records found: "+ records.size());
 		
 		//bruteforce way
 		timeStart = LocalTime.now(); //record start time
-		ArrayList<Address> e3RecordAddressesBruteForce = index.getLeafNodeByBruteForce(500,true);
+		ArrayList<Address> e3RecordAddressesBruteForce = index.getRecordsByBruteForce(500);
 		timeEnd = LocalTime.now(); //record end time
 		System.out.println("Start: "+timeStart+" End: "+timeEnd+" time lapse: " + timeEnd.compareTo(timeStart));
 
 		
 		double avgRating = 0;
-//		for (Record record: records) {
-//			avgRating += record.getAvgRating();
-//		}
-//		avgRating /= records.size();
+		for (Record record: records) {
+			avgRating += record.getAvgRating();
+		}
+		avgRating /= records.size();
 		System.out.println("Average rating is: "+avgRating);
 	}
 
 	public void experiment4(){
 		//Log.i(TAG,"Experience 4 started, getting records with numVotes between 30k-40k ");
 		ArrayList<Address> e4RecordAddresses = index.getRecordsWithKeyInRange(30000,40000);
-//		ArrayList<Record> records = disk.getRecords(e4RecordAddresses);
-//		// records collected, do calculate average rating
-//		double avgRating = 0;
-//		for (Record record: records) {
-//			avgRating += record.getAvgRating();
-//		}
-//		avgRating /= records.size();
-//		System.out.println("Average rating is: "+avgRating);
+		ArrayList<Record> records = disk.getRecords(e4RecordAddresses);
+		// records collected, do calculate average rating
+		double avgRating = 0;
+		for (Record record: records) {
+			avgRating += record.getAvgRating();
+		}
+		avgRating /= records.size();
+		System.out.println("Average rating is: "+avgRating);
 	}
 
-	public void experiment5(){
+	public void experiment5() {
+		System.out.println("Starting Experiment 5.............");
+		LocalTime timeStart = LocalTime.now(); //record start time
 		index.deleteKey(1000);
-		// TODO: get back address and delete records from storage
+		LocalTime timeEnd = LocalTime.now(); //record end time
+		System.out.println("Start: "+timeStart+" End: "+timeEnd+" time lapse: " + timeEnd.compareTo(timeStart));
+		
+		//bruteforce
+		timeStart = LocalTime.now(); //record start time
+		index.deleteKeyByBruteForce(1000);
+		timeEnd = LocalTime.now(); //record end time
+		System.out.println("Start: "+timeStart+" End: "+timeEnd+" time lapse: " + timeEnd.compareTo(timeStart));
+		
 	}
 
 	private void pause(String message){
