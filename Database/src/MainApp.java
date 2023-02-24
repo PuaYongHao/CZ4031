@@ -36,11 +36,13 @@ public class MainApp {
 		// disk.log();
 		// index.logStructure(1); // printing root and first level?
 
-		index.treeStats();
+		// index.treeStats();
 
 		// TODO do experiences
 		pause("Press any key to start experiment 1");
 		experiment1(records, blockSize);
+		pause("Press any key to start experiment 2");
+		experiment2();
 		pause("Press any key to start experiment 3");
 		experiment3();
 		pause("Press any key to start experiment 4");
@@ -51,11 +53,15 @@ public class MainApp {
 
 	public void experiment1(List<Record> records, int blockSize) {
 		System.out.println("Starting Experiment 1......");
-		// retrieve all the actual records inside the block
 		System.out.println("Total number of records: " + records.size());
 		System.out.println("The size of a record: " + Record.size());
 		System.out.println("The number of records stored in a block: " + blockSize / Record.size());
 		System.out.println("The number of blocks for storing the data: " + records.size() / Record.size());
+	}
+
+	public void experiment2() {
+		System.out.println("Starting Experiment 2......");
+		index.treeStats();
 	}
 
 	public void experiment3() {
