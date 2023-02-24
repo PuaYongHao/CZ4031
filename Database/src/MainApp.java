@@ -125,7 +125,7 @@ public class MainApp {
 
 		// bruteforce
 		timeStart = LocalTime.now(); // record start time
-		index.deleteKeyByBruteForce(1000);
+		experiment5Index.deleteKeyByBruteForce(1000);
 		timeEnd = LocalTime.now(); //record end time
 		System.out.println("Start: "+timeStart+" End: "+timeEnd+" time lapse: " + timeEnd.compareTo(timeStart));
 	}
