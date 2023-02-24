@@ -19,22 +19,33 @@ public class MainApp {
 	private Disk disk;
 	private BPlusTree index;
 
+	//experiment 5 variable
+	private Disk experiment5Disk;
+	private BPlusTree experiment5Index;
+
+
 	public void run(int blockSize) throws Exception {
 		// read records from data file
 		List<Record> records = readRecord("data.tsv");
 
 		disk = new Disk(500 * 1024 * 1024, blockSize);
 		index = new BPlusTree(blockSize);
-
-		// System.out.println("Block size: " + blockSize);
+		experiment5Disk = new Disk(500*1024*1024, blockSize);
+		experiment5Index = new BPlusTree(blockSize);
+		
+		System.out.println("Block size: " + blockSize);
 		Address recordAddr;
-		for (Record r : records) {
+		Address recordAddrExperiment5;
+		for (Record r: records) {
 			// inserting records into disk and create index!
 			recordAddr = disk.appendRecord(r);
-			index.insert(r.getNumVotes(), recordAddr);
+			index.insert( r.getNumVotes(), recordAddr);
+			recordAddrExperiment5 = experiment5Disk.appendRecord(r);
+			experiment5Index.insert( r.getNumVotes(), recordAddrExperiment5);
 		}
-		// disk.log();
-		// index.logStructure(1); // printing root and first level?
+
+		//disk.log();
+//		index.logStructure(1); // printing root and first level?
 
 		// index.treeStats();
 
@@ -115,9 +126,8 @@ public class MainApp {
 		// bruteforce
 		timeStart = LocalTime.now(); // record start time
 		index.deleteKeyByBruteForce(1000);
-		timeEnd = LocalTime.now(); // record end time
-		System.out.println("Start: " + timeStart + " End: " + timeEnd + " time lapse: " + timeEnd.compareTo(timeStart));
-
+		timeEnd = LocalTime.now(); //record end time
+		System.out.println("Start: "+timeStart+" End: "+timeEnd+" time lapse: " + timeEnd.compareTo(timeStart));
 	}
 
 	private void pause(String message) {
