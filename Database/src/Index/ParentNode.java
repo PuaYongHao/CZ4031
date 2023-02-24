@@ -112,16 +112,16 @@ public class ParentNode extends Node {
 	public int findSmallestKey() {
 		int key;
 		// If child node is leaf node
-		if (this.getChild(0).getIsLeaf())
-			key = this.getChild(0).findSmallestKey();
+		if (this.getIsLeaf())
+			key = this.getKeyAtIndex(0);
 		else {
-			// Make a copy of child node
-			ParentNode childNode = (ParentNode) this.getChild(0);
+			ParentNode childNode = (ParentNode) this;
 			// Traverse if the node is not leaf node
-			while (!childNode.getIsLeaf())
-				childNode = (ParentNode) childNode.getChild(0);
+			while (!childNode.getChildNodeAtIndex(0).getIsLeaf())
+				childNode = (ParentNode) childNode.getChildNodeAtIndex(0);
+			key = childNode.getChildNodeAtIndex(0).getKeyAtIndex(0);
 		}
-		key = childNode.getKeyAtIndex(0);
+		//key = this.getKeyAtIndex(0);
 		return key;
 	}
 	
