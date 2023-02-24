@@ -555,15 +555,15 @@ public class BPlusTree {
         while (!curNode.getIsLeaf()){
         	indexAccess++;
             parentNode = (ParentNode) curNode;
-            System.out.println("Current index node: "+ curNode.getKeys());
+            //System.out.println("Current index node: "+ curNode.getKeys());
             for (int i=0; i<parentNode.getKeys().size(); i++) {
                 if ( key <= parentNode.getKeyAtIndex(i)){
-                	System.out.println("target "+ key +" is <= "+ parentNode.getKeyAtIndex(i));
+                	//System.out.println("target "+ key +" is <= "+ parentNode.getKeyAtIndex(i));
                     curNode = parentNode.getChildNodeAtIndex(i);
                     break;
                 }
                 if (i == parentNode.getKeys().size()-1){
-                	System.out.println("target "+key+" is larger than all of the keys, following last pointer");
+                	//System.out.println("target "+key+" is larger than all of the keys, following last pointer");
                     curNode = parentNode.getChildNodeAtIndex(i+1);
                     break;
                 }
@@ -596,7 +596,7 @@ public class BPlusTree {
                 }
             }
         }
-        System.out.println("Normal search method ====================");
+        System.out.println("==================== Normal search method ====================");
         System.out.println("Number of index node access: "+indexAccess+", number of data block access: "+dataBlockAccess);
         return result;
     }
@@ -721,7 +721,7 @@ public class BPlusTree {
                 }
             }
         }
-        System.out.println("Brute force method ====================");
+        System.out.println("==================== Brute force method ====================");
         System.out.println("Number of index node access: "+indexAccess+", number of data block access: "+dataBlockAccess);
         return result;
     }
