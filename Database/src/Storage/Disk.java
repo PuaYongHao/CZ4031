@@ -189,6 +189,31 @@ public class Disk {
 
 		return records;
 	}
+	
+	//experiment 5 bruteforce delete
+		public ArrayList<Record> deleteRecordsByBruteForce(int key) {
+			ArrayList<Address> recordsToDelete = new ArrayList<>();
+			ArrayList<Record> recordsDeleted = new ArrayList<>();
+			int blockAccess = 0;
+			int foundRecordToDelete = 0;
+
+			for (int i = 0; i < this.blocks.size(); i++) {
+				blockAccess++;
+				for(int j = 0; j< getBlockAt(i).curRecords; j++) {
+					if(getBlockAt(i).getRecordAt(j).getNumVotes() == key) {
+						foundRecordToDelete++;
+						Address addressToDelete = new Address(i,j);
+						recordsToDelete.add(addressToDelete);
+						recordsDeleted.add(getBlockAt(i).getRecordAt(j));
+					}
+				}
+				deleteRecords(recordsToDelete);
+				recordsToDelete.clear();
+			}
+			//System.out.println("Size of result: "+recordsDeleted.size());
+			System.out.println("Brute-force data block access is: "+blockAccess + " with "+recordsDeleted.size()+" deleted records found");
+			return recordsDeleted;
+		}
 
 	public boolean deleteRecordAt(int blockId, int offset) {
 		boolean success = getBlockAt(blockId).deleteRecordAt(offset);

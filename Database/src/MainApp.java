@@ -44,22 +44,21 @@ public class MainApp {
 			experiment5Index.insert( r.getNumVotes(), recordAddrExperiment5);
 		}
 
-		//disk.log();
-//		index.logStructure(1); // printing root and first level?
 
-		// index.treeStats();
+		//index.treeStats();
 
 		// TODO do experiences
-		pause("\nPress any key to start experiment 1");
+		pause("\nPress enter for experiment 1...");
 		experiment1(records, blockSize);
-		pause("\nPress any key to start experiment 2");
+		pause("\nPress enter for experiment 2...");
 		experiment2();
-		pause("\nPress any key to start experiment 3");
+		pause("\nPress enter for experiment 3...");
 		experiment3();
-		pause("\nPress any key to start experiment 4");
+		pause("\nPress enter for experiment 4...");
 		experiment4();
-		pause("\nPress any key to start experiment 5");
+		pause("\nPress enter for experiment 5...");
 		experiment5();
+		System.out.println("\nEnd of experiment...");
 	}
 
 	public void experiment1(List<Record> records, int blockSize) {
@@ -134,11 +133,14 @@ public class MainApp {
 		printTime(timeStart.toString(),timeEnd.toString());
 		
 		// bruteforce
-		
+		timeStart = LocalTime.now(); // record start time
+		experiment5Disk.deleteRecordsByBruteForce(1000);
+		timeEnd = LocalTime.now(); // record end time
+		printTime(timeStart.toString(),timeEnd.toString());
 	}
 	
 	private void printTime(String start, String end) {
-		System.out.println("Start: "+start+" End: "+end);
+		System.out.println("Start time: "+start+" End time: "+end);
 		Double timeTaken = Double.parseDouble(end.toString().substring(end.toString().lastIndexOf(":")+1)) - Double.parseDouble(start.toString().substring(start.toString().lastIndexOf(":")+1));
 		System.out.println("Time taken: "+ timeTaken+ "s\n");
 	}
