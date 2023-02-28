@@ -16,7 +16,6 @@ public class Disk {
 		this.maxBlockCount = diskSize / blockSize;
 		this.blocks = new ArrayList<>();
 		this.recordCounts = 0;
-		// log();
 	}
 
 	/**
@@ -91,7 +90,6 @@ public class Disk {
 		}
 		int offset = block.insertRecord(record);
 		recordCounts++;
-//        Log.v(String.format("Record inserted at %d-%d", blockId, offset));
 		return new Address(blockId, offset);
 	}
 
@@ -131,23 +129,15 @@ public class Disk {
 		for (Address address : addresses) {
 			// try search from cache first, before access from disk
 			tempBlock = cache.get(address.getBlockId());
-			boolean cacheRead = tempBlock != null;
+			//boolean cacheRead = tempBlock != null;
 			if (tempBlock == null) {
 				tempBlock = getBlockAt(address.getBlockId());
-//                Log.v("Disk Access", String.format("Disk read: blockId=%d, offset=%d, block=%s", address.blockId, address.offset, tempBlock));
 				cache.put(address.getBlockId(), tempBlock);
 				blockAccess++;
-			} else {// accessing the block from cache, no block access
-//                Log.v("Disk Access", String.format("Cache read: blockId=%d, offset=%d, block=%s", address.blockId, address.offset, tempBlock));
-			}
+			}// accessing the block from cache, no block access
 			Record record = tempBlock.getRecordAt(address.getOffset());
-			// Log.v("Disk Access", String.format("%s read: blockId=%4d, \toffset=%d,
-			// \trecord=%s", cacheRead?"Cache":"Disk", address.blockId, address.offset,
-			// record));
 			records.add(record);
 		}
-		// Log.i(TAG, String.format("Retrieved %d records with %d block access",
-		// records.size(), blockAccess));
 		System.out.println("data block access is: "+blockAccess+" with "+records.size()+" records found");
 		return records;
 	}
@@ -195,13 +185,13 @@ public class Disk {
 			ArrayList<Address> recordsToDelete = new ArrayList<>();
 			ArrayList<Record> recordsDeleted = new ArrayList<>();
 			int blockAccess = 0;
-			int foundRecordToDelete = 0;
+			//int foundRecordToDelete = 0;
 
 			for (int i = 0; i < this.blocks.size(); i++) {
 				blockAccess++;
 				for(int j = 0; j< getBlockAt(i).curRecords; j++) {
 					if(getBlockAt(i).getRecordAt(j).getNumVotes() == key) {
-						foundRecordToDelete++;
+						//foundRecordToDelete++;
 						Address addressToDelete = new Address(i,j);
 						recordsToDelete.add(addressToDelete);
 						recordsDeleted.add(getBlockAt(i).getRecordAt(j));
@@ -229,11 +219,4 @@ public class Disk {
 		}
 	}
 
-	// debugs only
-//    public void log(){
-//        Log.d(TAG, String.format("disk size = %s / %s", Utility.formatFileSize(getUsedSize()), Utility.formatFileSize(diskSize) ));
-//        Log.d(TAG, String.format("block size = %s", Utility.formatFileSize(blockSize)));
-//        Log.d(TAG, String.format("blocks = %,d / %,d", blocks.size(), maxBlockCount));
-//        Log.d(TAG, String.format("records = %,d", recordCounts));
-//    }
 }

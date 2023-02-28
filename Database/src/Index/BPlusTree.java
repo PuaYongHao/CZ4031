@@ -4,7 +4,6 @@ import Storage.Address;
 import java.util.ArrayList;
 
 public class BPlusTree {
-	private static final String TAG = "B+Tree";
 	private static final int SIZE_POINTER = 8; // for 64 bits system; RAM use 64bit for addressing -> 2^6 = 6B
 	private static final int SIZE_KEY = 4; // for int value
 	int maxKeys; // Max number of keys per node
@@ -26,9 +25,7 @@ public class BPlusTree {
 		maxKeys = (blockSize - SIZE_POINTER) / (SIZE_KEY + SIZE_POINTER); // n
 		parentMinKeys = (int) Math.floor(maxKeys / 2.0);
 		leafMinKeys = (int) Math.floor((maxKeys + 1.0) / 2.0);
-		// TOREMOVE: Log.i(TAG, "init: blockSize = "+blockSize+", maxKeys = "+maxKeys);
 		System.out.println("init: blockSize = " + blockSize + ", maxKeys = " + maxKeys);
-		// TOREMOVE: Log.i(TAG, "MinKeys: parent="+parentMinKeys+", leaf="+leafMinKeys);
 		System.out.println("MinKeys: parent=" + parentMinKeys + ", leaf=" + leafMinKeys);
 		root = createFirst();
 		nodeCount = 0;
@@ -265,7 +262,6 @@ public class BPlusTree {
 		}
 		System.out.println("No more keys to delete...... ");
 		System.out.println("number of 1000s deleted: " + count);
-		// TOREMOVE: Log.d("deletion", "number of nodes deleted = " + deletedCount);
 		nodeCount -= deletedCount;
 		treeStats();
 	}

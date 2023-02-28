@@ -56,7 +56,6 @@ public abstract class Node {
 		return keys.get(index);
 	}
 	
-	// NEED TO REVIEW WITH OTHERS
 	// Add key in ascending order to the node and return index
 	public int addKey(int key) {
 		// If node is empty
@@ -91,11 +90,9 @@ public abstract class Node {
 		keys.remove(index);
 	}
 	
-	// NEED TO REVIEW WITH OTHERS
 	// Find smallest key
 	public abstract int findSmallestKey();
 	
-	// NEED TO REVIEW WITH OTHERS
 	// Delete node
 	public void deleteNode() {
 		// If there exist a parent node

@@ -1,7 +1,5 @@
 package Storage;
 
-import java.util.Arrays;
-
 public class Block {
     int maxRecords;
     int curRecords;

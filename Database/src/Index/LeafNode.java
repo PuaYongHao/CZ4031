@@ -36,7 +36,6 @@ public class LeafNode extends Node {
         return records.get(index);
     }
     
-    // NEED TO REVIEW WITH OTHERS
     // Add record
     public int addRecord(int key, Address address) {
     	// Assume keys and records are always tally 
@@ -57,7 +56,6 @@ public class LeafNode extends Node {
         records.remove(index);
     }
 
-    // NEED TO REVIEW WITH OTHERS
     // Delete all records from leaf node
     public void deleteRecords() {
     	// Make sure keys and records are always tally 
@@ -73,7 +71,6 @@ public class LeafNode extends Node {
 		return key;
 	}
 
-	// NEED TO REVIEW WITH OTHERS
 	// Delete current leaf node
 	public void deleteNode() {
 		super.deleteNode();

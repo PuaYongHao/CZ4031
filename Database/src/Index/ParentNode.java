@@ -82,7 +82,6 @@ public class ParentNode extends Node {
         }
     }
     
-    // NEED TO REVIEW WITH OTHERS
     // Delete all child nodes
     public void deleteChildNodes() {
     	// Make sure keys and child nodes are always tally
@@ -106,7 +105,6 @@ public class ParentNode extends Node {
         return null;
     }
 
-	// NEED TO REVIEW WITH OTHERS
 	@Override
 	// Traverse the child node to find the smallest key
 	public int findSmallestKey() {
@@ -125,7 +123,6 @@ public class ParentNode extends Node {
 		return key;
 	}
 	
-	// NEED TO REVIEW WITH OTHERS
 	// Delete current leaf node
 	public void deleteNode() {
 		super.deleteNode();
