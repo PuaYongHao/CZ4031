@@ -10,56 +10,42 @@ import Storage.Address;
 import Storage.Disk;
 import Storage.Record;
 import Index.BPlusTree;
-//import app.util.Log;
-//import app.util.Utility;
 
 public class MainApp {
-	// private static final String TAG = "App";
 	Scanner scanner = new Scanner(System.in);
 	private Disk disk;
-	private BPlusTree index;
+	private BPlusTree tree;
 
-	//experiment 5 variable
+	// experiment 5 variable
 	private Disk experiment5Disk;
-	private BPlusTree experiment5Index;
-
 
 	public void run(int blockSize) throws Exception {
 		// read records from data file
 		List<Record> records = readRecord("data.tsv");
-
 		disk = new Disk(500 * 1024 * 1024, blockSize);
-		index = new BPlusTree(blockSize);
-		experiment5Disk = new Disk(500*1024*1024, blockSize);
-		experiment5Index = new BPlusTree(blockSize);
-		
+		tree = new BPlusTree(blockSize);
+		experiment5Disk = new Disk(500 * 1024 * 1024, blockSize);
+
 		System.out.println("Block size: " + blockSize);
 		Address recordAddr;
-		Address recordAddrExperiment5;
-		for (Record r: records) {
+		for (Record r : records) {
 			// inserting records into disk and create index!
 			recordAddr = disk.appendRecord(r);
-			index.insert( r.getNumVotes(), recordAddr);
-			recordAddrExperiment5 = experiment5Disk.appendRecord(r);
-			experiment5Index.insert( r.getNumVotes(), recordAddrExperiment5);
+			tree.insert(r.getNumVotes(), recordAddr);
+			experiment5Disk.appendRecord(r);
 		}
 
-		//disk.log();
-//		index.logStructure(1); // printing root and first level?
-
-		// index.treeStats();
-
-		// TODO do experiences
-		pause("Press any key to start experiment 1");
+		pause("\nPress enter for experiment 1...");
 		experiment1(records, blockSize);
-		pause("Press any key to start experiment 2");
+		pause("\nPress enter for experiment 2...");
 		experiment2();
-		pause("Press any key to start experiment 3");
+		pause("\nPress enter for experiment 3...");
 		experiment3();
-		pause("Press any key to start experiment 4");
+		pause("\nPress enter for experiment 4...");
 		experiment4();
-		pause("Press any key to start experiment 5");
+		pause("\nPress enter for experiment 5...");
 		experiment5();
+		System.out.println("\nEnd of experiment...");
 	}
 
 	public void experiment1(List<Record> records, int blockSize) {
@@ -67,12 +53,12 @@ public class MainApp {
 		System.out.println("Total number of records: " + records.size());
 		System.out.println("The size of a record: " + Record.size());
 		System.out.println("The number of records stored in a block: " + blockSize / Record.size());
-		System.out.println("The number of blocks for storing the data: " + records.size() / Record.size());
+		System.out.println("The number of blocks for storing the data: " + disk.getBlocksCount());
 	}
 
 	public void experiment2() {
 		System.out.println("Starting Experiment 2......");
-		index.treeStats();
+		tree.treeStats();
 	}
 
 	public void experiment3() {
@@ -81,53 +67,67 @@ public class MainApp {
 
 		// normal B+ scanning
 		LocalTime timeStart = LocalTime.now(); // record start time
-		ArrayList<Address> e3RecordAddresses = index.getRecordsWithKey(500);
-		LocalTime timeEnd = LocalTime.now(); // record end time
-		System.out.println("Start: " + timeStart + " End: " + timeEnd + " time lapse: " + timeEnd.compareTo(timeStart));
+		ArrayList<Address> exp3Record = tree.getRecordsWithKey(500);
 		// retrieve all the actual records inside the block
-		ArrayList<Record> records = disk.getRecords(e3RecordAddresses);
-		System.out.println("Number of records found: " + records.size());
+		ArrayList<Record> records = disk.getRecords(exp3Record);
+		LocalTime timeEnd = LocalTime.now(); // record end time
+		printTime(timeStart.toString(), timeEnd.toString());
 
 		// bruteforce way
-		timeStart = LocalTime.now(); // record start time
-		ArrayList<Address> e3RecordAddressesBruteForce = index.getRecordsByBruteForce(500);
-		timeEnd = LocalTime.now(); // record end time
-		System.out.println("Start: " + timeStart + " End: " + timeEnd + " time lapse: " + timeEnd.compareTo(timeStart));
+		timeStart = LocalTime.now();
+		ArrayList<Record> recordsByBF = disk.getRecordsByBruteForce(500);
+		timeEnd = LocalTime.now();
+		printTime(timeStart.toString(), timeEnd.toString());
 
-		double avgRating = 0;
+		double averageRating = 0;
 		for (Record record : records) {
-			avgRating += record.getAvgRating();
+			averageRating += record.getAvgRating();
 		}
-		avgRating /= records.size();
-		System.out.println("Average rating is: " + avgRating);
+		averageRating /= records.size();
+		System.out.println("Average rating of movies with numVotes == 500 is: " + averageRating);
 	}
 
 	public void experiment4() {
-		// Log.i(TAG,"Experience 4 started, getting records with numVotes between
-		// 30k-40k ");
-		ArrayList<Address> e4RecordAddresses = index.getRecordsWithKeyInRange(30000, 40000);
-		ArrayList<Record> records = disk.getRecords(e4RecordAddresses);
+		LocalTime timeStart = LocalTime.now(); // record start time
+		ArrayList<Address> exp4Record = tree.getRecordsWithKeyInRange(30000, 40000);
+		ArrayList<Record> records = disk.getRecords(exp4Record);
+		LocalTime timeEnd = LocalTime.now(); // record end time
+		printTime(timeStart.toString(), timeEnd.toString());
+
+		// bruteforce
+		timeStart = LocalTime.now();
+		ArrayList<Record> recordsByBF = disk.getRecordsByBruteForce(30000, 40000);
+		timeEnd = LocalTime.now();
+		printTime(timeStart.toString(), timeEnd.toString());
+
 		// records collected, do calculate average rating
-		double avgRating = 0;
+		double averageRating = 0;
 		for (Record record : records) {
-			avgRating += record.getAvgRating();
+			averageRating += record.getAvgRating();
 		}
-		avgRating /= records.size();
-		System.out.println("Average rating is: " + avgRating);
+		averageRating /= records.size();
+		System.out.println("Average rating of movies with numVotes between 30,000 and 40,000 is: " + averageRating);
 	}
 
 	public void experiment5() {
 		System.out.println("Starting Experiment 5.............");
 		LocalTime timeStart = LocalTime.now(); // record start time
-		index.deleteKey(1000);
+		tree.deleteKey(1000);
 		LocalTime timeEnd = LocalTime.now(); // record end time
-		System.out.println("Start: " + timeStart + " End: " + timeEnd + " time lapse: " + timeEnd.compareTo(timeStart));
+		printTime(timeStart.toString(), timeEnd.toString());
 
 		// bruteforce
 		timeStart = LocalTime.now(); // record start time
-		index.deleteKeyByBruteForce(1000);
-		timeEnd = LocalTime.now(); //record end time
-		System.out.println("Start: "+timeStart+" End: "+timeEnd+" time lapse: " + timeEnd.compareTo(timeStart));
+		experiment5Disk.deleteRecordsByBruteForce(1000);
+		timeEnd = LocalTime.now(); // record end time
+		printTime(timeStart.toString(), timeEnd.toString());
+	}
+
+	private void printTime(String start, String end) {
+		System.out.println("Start time: " + start + " End time: " + end);
+		Double timeTaken = Double.parseDouble(end.toString().substring(end.toString().lastIndexOf(":") + 1))
+				- Double.parseDouble(start.toString().substring(start.toString().lastIndexOf(":") + 1));
+		System.out.println("Time taken: " + timeTaken + "s\n");
 	}
 
 	private void pause(String message) {

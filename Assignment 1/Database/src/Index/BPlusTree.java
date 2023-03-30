@@ -4,7 +4,6 @@ import Storage.Address;
 import java.util.ArrayList;
 
 public class BPlusTree {
-    private static final String TAG = "B+Tree";
     private static final int SIZE_POINTER = 8; // for 64 bits system; RAM use 64bit for addressing -> 2^6 = 6B
     private static final int SIZE_KEY = 4; // for int value
     int maxKeys; // Max number of keys per node
@@ -26,9 +25,7 @@ public class BPlusTree {
         maxKeys = (blockSize - SIZE_POINTER) / (SIZE_KEY + SIZE_POINTER); // n
         parentMinKeys = (int) Math.floor(maxKeys / 2.0);
         leafMinKeys = (int) Math.floor((maxKeys + 1.0) / 2.0);
-        // TOREMOVE: Log.i(TAG, "init: blockSize = "+blockSize+", maxKeys = "+maxKeys);
         System.out.println("init: blockSize = " + blockSize + ", maxKeys = " + maxKeys);
-        // TOREMOVE: Log.i(TAG, "MinKeys: parent="+parentMinKeys+", leaf="+leafMinKeys);
         System.out.println("MinKeys: parent=" + parentMinKeys + ", leaf=" + leafMinKeys);
         root = createFirst();
         nodeCount = 0;
@@ -244,7 +241,7 @@ public class BPlusTree {
             // leaf = searchLeaf(key);
             leaf = getLeafNodeWithKey(key);
             keys = leaf.getKeys();
-            System.out.println("Still have keys to delete: " + keys);
+            // System.out.println("Still have keys to delete: " + keys);
 
             // delete one record and update tree
             for (int i = 0; i < keys.size(); i++) {
@@ -265,45 +262,6 @@ public class BPlusTree {
         }
         System.out.println("No more keys to delete...... ");
         System.out.println("number of 1000s deleted: " + count);
-        // TOREMOVE: Log.d("deletion", "number of nodes deleted = " + deletedCount);
-        nodeCount -= deletedCount;
-        treeStats();
-    }
-
-    public void deleteKeyByBruteForce(int key) {
-
-        ArrayList<Integer> keys;
-        LeafNode leaf;
-        int count = 0;
-
-        // while there are still records with given key value
-        while (getRecordsWithKey(key).size() != 0) {
-
-            // leaf = searchLeaf(key);
-            leaf = getLeafNodeByBruteForce(key);
-            keys = leaf.getKeys();
-            System.out.println("Still have keys to delete: " + keys);
-
-            // delete one record and update tree
-            for (int i = 0; i < keys.size(); i++) {
-
-                if (keys.get(i) == key) {
-
-                    leaf.deleteRecordAtIndex(i);
-                    count++;
-
-                    // if leafnode is not root then update tree
-                    if (!leaf.getIsRoot())
-                        resetLeaf(leaf);
-
-                    break;
-                }
-            }
-            // System.out.println(keys);
-        }
-        System.out.println("No more keys to delete...... ");
-        System.out.println("number of 1000s deleted: " + count);
-        // TOREMOVE: Log.d("deletion", "number of nodes deleted = " + deletedCount);
         nodeCount -= deletedCount;
         treeStats();
     }
@@ -557,13 +515,13 @@ public class BPlusTree {
     // Get Records with a target key (e.g. numVote = 500)
     public ArrayList<Address> getRecordsWithKey(int key) {
         ArrayList<Address> result = new ArrayList<>();
-        int indexAccess = 0;
-        int dataBlockAccess = 0;
+        int nonLeafAccess = 0; // count internal node accesses
+        int leafNodeAccess = 0; // count leaf node accesses
         Node curNode = root;
         ParentNode parentNode;
-        // searching for leaf node with key
+        // search for leaf node
         while (!curNode.getIsLeaf()) {
-            indexAccess++;
+            nonLeafAccess++;
             parentNode = (ParentNode) curNode;
             // System.out.println("Current index node: "+ curNode.getKeys());
             for (int i = 0; i < parentNode.getKeys().size(); i++) {
@@ -580,26 +538,26 @@ public class BPlusTree {
                 }
             }
         }
-        // after leaf node is found, find all records with same key
+        // find all leaf node keys index with the target key
         LeafNode curLeaf = (LeafNode) curNode;
         boolean done = false;
         while (!done && curLeaf != null) {
-            dataBlockAccess++;
-            // finding same keys within leaf node
+            leafNodeAccess++;
             for (int i = 0; i < curLeaf.getKeys().size(); i++) {
-                // found same key, add into result list
                 if (curLeaf.getKeyAtIndex(i) == key) {
+                    // found leaf node key index with the target key
                     result.add(curLeaf.getRecordAtIndex(i));
                     continue;
                 }
-                // if curKey > searching key, no need to continue searching
+                // break if current leaf node key is larger than what we are searching for
                 if (curLeaf.getKeyAtIndex(i) > key) {
                     done = true;
                     break;
                 }
             }
             if (!done) {
-                // trying to check sibling node has remaining records of same key
+                // if end of leaf node but key index is still smaller or equal to target key
+                // go to next leaf node and continue scanning
                 if (curLeaf.getNext() != null) {
                     curLeaf = curLeaf.getNext();
                 } else {
@@ -607,16 +565,17 @@ public class BPlusTree {
                 }
             }
         }
-        System.out.println("Normal search method ====================");
+        // System.out.println("Normal search method ====================");
         System.out.println(
-                "Number of index node access: " + indexAccess + ", number of data block access: " + dataBlockAccess);
+                "Number of index node access (internal node + leaf node): " + (nonLeafAccess + leafNodeAccess));
         return result;
     }
 
+    // this method is to return the first leaf node that contains the target key
     public LeafNode getLeafNodeWithKey(int key) {
         Node curNode = root;
         ParentNode parentNode;
-        // searching for leaf node with key
+        // search for leaf node
         while (!curNode.getIsLeaf()) {
             parentNode = (ParentNode) curNode;
             for (int i = 0; i < parentNode.getKeys().size(); i++) {
@@ -630,24 +589,24 @@ public class BPlusTree {
                 }
             }
         }
-        // after leaf node is found, find all records with same key
+        // find the FIRST leaf node keys index with the target key
         LeafNode curLeaf = (LeafNode) curNode;
         boolean done = false;
         while (!done && curLeaf != null) {
-            // finding same keys within leaf node
             for (int i = 0; i < curLeaf.getKeys().size(); i++) {
-                // found same key, add into result list
+                // found same key, immediately return
                 if (curLeaf.getKeyAtIndex(i) == key) {
                     return curLeaf;
                 }
-                // if curKey > searching key, no need to continue searching
+                // break if current leaf node key is larger than what we are searching for
                 if (curLeaf.getKeyAtIndex(i) > key) {
                     done = true;
                     break;
                 }
             }
             if (!done) {
-                // trying to check sibling node has remaining records of same key
+                // if end of leaf node but key index is still smaller or equal to target key
+                // go to next leaf node and continue scanning
                 if (curLeaf.getNext() != null) {
                     curLeaf = curLeaf.getNext();
                 } else {
@@ -655,91 +614,11 @@ public class BPlusTree {
                 }
             }
         }
+        // no result found
         return null;
     }
 
-    public LeafNode getLeafNodeByBruteForce(int key) {
-        Node curNode = root;
-        ParentNode parentNode;
-        // searching for leaf node with key
-        while (!curNode.getIsLeaf()) {
-            parentNode = (ParentNode) curNode;
-            curNode = parentNode.getChildNodeAtIndex(0);
-        }
-
-        // now leaf is always at leftmost leftnode
-        LeafNode curLeaf = (LeafNode) curNode;
-        boolean done = false;
-        while (!done && curLeaf != null) {
-            // finding same keys within leaf node
-            for (int i = 0; i < curLeaf.getKeys().size(); i++) {
-                // found same key, add into result list
-                if (curLeaf.getKeyAtIndex(i) == key) {
-                    return curLeaf;
-                }
-                // if curKey > searching key, no need to continue searching
-                if (curLeaf.getKeyAtIndex(i) > key) {
-                    done = true;
-                    break;
-                }
-            }
-            if (!done) {
-                // trying to check sibling node has remaining records of same key
-                if (curLeaf.getNext() != null) {
-                    curLeaf = curLeaf.getNext();
-                } else {
-                    break;
-                }
-            }
-        }
-        return null;
-    }
-
-    public ArrayList<Address> getRecordsByBruteForce(int key) {
-        ArrayList<Address> result = new ArrayList<>();
-        int indexAccess = 0;
-        int dataBlockAccess = 0;
-        Node curNode = root;
-        ParentNode parentNode;
-        // searching for leaf node with key
-        while (!curNode.getIsLeaf()) {
-            indexAccess++;
-            parentNode = (ParentNode) curNode;
-            curNode = parentNode.getChildNodeAtIndex(0);
-        }
-        // after leaf node is found, find all records with same key
-        LeafNode curLeaf = (LeafNode) curNode;
-        boolean done = false;
-        while (!done && curLeaf != null) {
-            dataBlockAccess++;
-            // finding same keys within leaf node
-            for (int i = 0; i < curLeaf.getKeys().size(); i++) {
-                // found same key, add into result list
-                if (curLeaf.getKeyAtIndex(i) == key) {
-                    result.add(curLeaf.getRecordAtIndex(i));
-                    continue;
-                }
-                // if curKey > searching key, no need to continue searching
-                if (curLeaf.getKeyAtIndex(i) > key) {
-                    done = true;
-                    break;
-                }
-            }
-            if (!done) {
-                // trying to check sibling node has remaining records of same key
-                if (curLeaf.getNext() != null) {
-                    curLeaf = curLeaf.getNext();
-                } else {
-                    break;
-                }
-            }
-        }
-        System.out.println("Brute force method ====================");
-        System.out.println(
-                "Number of index node access: " + indexAccess + ", number of data block access: " + dataBlockAccess);
-        return result;
-    }
-
+    // print the current stats of the B+ tree
     public void treeStats() {
 
         ArrayList<Integer> rootKeys = new ArrayList<Integer>();
@@ -761,129 +640,61 @@ public class BPlusTree {
         System.out.println("The number of nodes of the B+ tree: " + nodeCount);
         System.out.println("The number of levels of the B+ tree: " + height);
         System.out.println("The content of the root node (only the keys): " + rootKeys);
-
-        // System.out.println("n = " + maxKeys + ", number of nodes = " + nodeCount + ",
-        // height = " + height);
-        // System.out.println("root node contents = " + rootKeys);
-        // System.out.println("first child contents = " + firstKeys);
     }
 
-    // TODO for Experiment 4
+    // called from MainApp
+    // used for experiment 4 ranged query 30k to 40k
     public ArrayList<Address> getRecordsWithKeyInRange(int min, int max) {
-        return getRecordsWithKeyInRange(min, max, true);
-    }
-
-    public ArrayList<Address> getRecordsWithKeyInRange(int min, int max, boolean isVerbose) {
         ArrayList<Address> result = new ArrayList<>();
-        int nodeAccess = 1; // access the root??
-        int siblingAccess = 0;
-        if (isVerbose) {
-            // TOREMOVE: Log.d("B+Tree.rangeSearch", "[Index.Node Access] Access root
-            // node");
-        }
+        int nonLeafAccess = 0;
+        int leafNodeAccess = 0;
         Node curNode = root;
         ParentNode parentNode;
-        // searching for leaf node with key
+        // search for leaf node
         while (!curNode.getIsLeaf()) {
+            nonLeafAccess++;
             parentNode = (ParentNode) curNode;
             for (int i = 0; i < parentNode.getKeys().size(); i++) {
                 if (min <= parentNode.getKeyAtIndex(i)) {
-                    if (isVerbose) {
-                        // TOREMOVE: Log.v("B+Tree.rangeSearch", curNode.toString());
-                        // TOREMOVE: Log.d("B+Tree.rangeSearch", String.format("[Index.Node Access]
-                        // follow pointer [%d]: min(%d)<=curKey(%d)", i, min, parentNode.getKey(i)));
-                    }
                     curNode = parentNode.getChildNodeAtIndex(i);
-                    nodeAccess++;
                     break;
                 }
                 if (i == parentNode.getKeys().size() - 1) {
-                    if (isVerbose) {
-                        // TOREMOVE: Log.v("B+Tree.rangeSearch", curNode.toString());
-                        // TOREMOVE: Log.d("B+Tree.rangeSearch", String.format("[Index.Node Access]
-                        // follow pointer [%d+1]: last key and min(%d)>curKey(%d)", i, min,
-                        // parentNode.getKey(i)));
-                    }
                     curNode = parentNode.getChildNodeAtIndex(i + 1);
-                    nodeAccess++;
                     break;
                 }
             }
         }
-        // after leaf node is found, find all records with same key
+        // find all leaf node keys index with the target key
+        // instead of just target key, we select values that are >= 30k and <=40k
         LeafNode curLeaf = (LeafNode) curNode;
         boolean done = false;
         while (!done && curLeaf != null) {
-            // finding same keys within leaf node
+            leafNodeAccess++;
             for (int i = 0; i < curLeaf.getKeys().size(); i++) {
-                // found same key, add into result list
                 if (curLeaf.getKeyAtIndex(i) >= min && curLeaf.getKeyAtIndex(i) <= max) {
                     result.add(curLeaf.getRecordAtIndex(i));
                     continue;
                 }
-                // if curKey > searching key, no need to continue searching
+                // if current leaf node key value is more than max, for example 40001, we break
+                // and return
                 if (curLeaf.getKeyAtIndex(i) > max) {
                     done = true;
                     break;
                 }
             }
             if (!done) {
-                // trying to check sibling node has remaining records of same key
+                // go to next leaf node if leaf node is still within range (e.g. 30k to 40k)
                 if (curLeaf.getNext() != null) {
                     curLeaf = (LeafNode) curLeaf.getNext();
-                    nodeAccess++;
-                    siblingAccess++;
                 } else {
                     break;
                 }
             }
         }
-        if (siblingAccess > 0) {
-            if (isVerbose) {
-                // TOREMOVE: Log.d("B+Tree.rangeSearch", "[Index.Node Access] " + siblingAccess
-                // + " sibling node access");
-            }
-        }
-        if (isVerbose) {
-            // TOREMOVE: Log.i("B+Tree.rangeSearch", String.format("input(%d, %d): %d
-            // records found with %d node access", min, max, result.size(), nodeAccess));
-        }
+        System.out.println(
+                "Number of index node access (internal node + leaf node): " + (nonLeafAccess + leafNodeAccess));
         return result;
     }
 
-    // TODO for Experiment 5
-    public ArrayList<Address> removeRecordsWithKey() {
-        // list of address need to be return, so app can use it to delete records from
-        // disk
-        return null;
-    }
-
-    // TOREMOVE:
-    public void logStructure() {
-        logStructure(0, Integer.MAX_VALUE, root);
-    }
-
-    public void logStructure(int maxLevel) {
-        logStructure(0, maxLevel, root);
-    }
-
-    // recursive logging of tree structure
-    private void logStructure(int level, int maxLevel, Node curNode) {
-        if (curNode == null) {
-            curNode = root;
-        }
-        if (level > maxLevel) {
-            return;
-        }
-
-        System.out.print("h=" + level + "; ");
-        // curNode.logStructure();
-        if (curNode.getIsLeaf()) {
-            return;
-        }
-        ParentNode parentNode = (ParentNode) curNode;
-        for (Node child : parentNode.getChildNodes()) {
-            logStructure(level + 1, maxLevel, child);
-        }
-    }
 }
