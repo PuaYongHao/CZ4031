@@ -18,12 +18,13 @@ class MyWidget(QWidget):
         super().__init__()
         
         #Query1
-        queryText1 = SquareLineEdit()
+        self.queryText1 = SquareLineEdit()
         
-        queryDropDown1 = QComboBox()
-        queryDropDown1.addItem("Select * from customer")
-        queryDropDown1.addItem("Select * from region")
-        queryDropDown1.addItem("Select * from orders")
+        self.queryDropDown1 = QComboBox()
+        self.queryDropDown1.addItem("Select * from customer")
+        self.queryDropDown1.addItem("Select * from region")
+        self.queryDropDown1.addItem("Select * from orders")
+        self.queryDropDown1.currentIndexChanged.connect(self.updateLineEdit)
         
         generateButton1 = QPushButton()
         
@@ -35,8 +36,8 @@ class MyWidget(QWidget):
         graphVizImage1.setDisabled(True)
         
         query1VL = QVBoxLayout()
-        query1VL.addWidget(queryText1)
-        query1VL.addWidget(queryDropDown1)
+        query1VL.addWidget(self.queryText1)
+        query1VL.addWidget(self.queryDropDown1)
         query1VL.addWidget(generateButton1)
         query1VL.addWidget(explainText1)
         query1VL.addWidget(graphVizImage1)
@@ -78,6 +79,9 @@ class MyWidget(QWidget):
         
     def setTestingMessage(self, message):
         self.testingMessageLabel.setText(message)
+
+    def updateLineEdit(self, index):
+        self.queryText1.setText(self.queryDropDown1.currentText())
     
 
     
@@ -85,7 +89,7 @@ class MyWidget(QWidget):
 
 if __name__ == '__main__':
     conn = psycopg2.connect(
-        database="TPC-H", user='postgres', password='270198', host='127.0.0.1', port= '5432'
+        database="TPC-H", user='postgres', password='123456', host='127.0.0.1', port= '5432'
     )
     
     conn.autocommit = True
