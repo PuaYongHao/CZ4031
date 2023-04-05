@@ -80,7 +80,7 @@ class MyWidget(QWidget):
         self.testingMessageLabel.setText(message)
     
 
-    
+
 
 
 if __name__ == '__main__':
@@ -90,10 +90,20 @@ if __name__ == '__main__':
     
     conn.autocommit = True
     cursor = conn.cursor()
+    cursor.execute(
+                f"EXPLAIN (FORMAT JSON) {'''SELECT * from Region, customer Where region.r_regionkey = 0'''}")
     
-    cursor.execute('''SELECT * from Region''')
+    #cursor.execute('''SELECT * from Region''')
     result = cursor.fetchall()
-    print(result)
+    #print(result)
+    for x in result[0][0][0]["Plan"]:
+        if(x != "Plans"):
+            print("Key: ", x, " = ", result[0][0][0]["Plan"][x])
+    for y in result[0][0][0]["Plan"]["Plans"]:
+        print("-------------")
+        for z in y:
+            print("Key: ",z, " = ", y[z])
+    #print(result[0][0][0]["Plan"])
     
     app = QApplication(sys.argv)
     widget = MyWidget()
