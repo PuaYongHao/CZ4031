@@ -1,0 +1,3 @@
+Select * from customer where c_custkey = 1
+Select * from customer where c_custkey >= 10 and c_custkey <=50
+Select distinct c_name from customer where LENGTH(c_address) >= 20
