@@ -1,12 +1,12 @@
 import sys
 from PyQt6.QtCore import Qt,QSize
-from PyQt6.QtWidgets import QComboBox,QApplication, QWidget, QLabel, QLineEdit, QVBoxLayout, QHBoxLayout, QPushButton
+from PyQt6.QtWidgets import QComboBox,QApplication, QWidget, QLabel, QTextEdit, QVBoxLayout, QPushButton, QGridLayout
 from PyQt6.QtGui import QPixmap
 import graphviz
 import psycopg2
 
 
-class SquareLineEdit(QLineEdit):
+class SquareLineEdit(QTextEdit):
     def sizeHint(self):
         # Override sizeHint() to return a square size
         size = super().sizeHint()
@@ -36,18 +36,20 @@ class MyWidget(QWidget):
         generateButton1.setText("generate")
         
         explainText1 = SquareLineEdit()
-        explainText1.setDisabled(True)
+        explainText1.setReadOnly(True)
+        # explainText1.setDisabled(True)
         
         #graphVizImage = QPixmap('sid.jpg')
-        graphVizImage1 = SquareLineEdit()
-        graphVizImage1.setDisabled(True)
+        self.graphVizImage1 = QLabel()
+        # self.graphVizImage1 = SquareLineEdit()
+        # self.graphVizImage1.setDisabled(True)
         
-        query1VL = QVBoxLayout()
-        query1VL.addWidget(self.queryText1)
-        query1VL.addWidget(self.queryDropDown1)
-        query1VL.addWidget(generateButton1)
-        query1VL.addWidget(explainText1)
-        query1VL.addWidget(graphVizImage1)
+        # query1VL = QVBoxLayout()
+        # query1VL.addWidget(self.queryText1)
+        # query1VL.addWidget(self.queryDropDown1)
+        # query1VL.addWidget(generateButton1)
+        # query1VL.addWidget(explainText1)
+        # query1VL.addWidget(graphVizImage1)
 
         #Query2
         self.queryText2 = SquareLineEdit()
@@ -61,28 +63,50 @@ class MyWidget(QWidget):
         generateButton2.setText("generate")
         
         explainText2 = SquareLineEdit()
-        explainText2.setDisabled(True)
+        explainText2.setReadOnly(True)
+        # explainText2.setDisabled(True)
     
         #self.graphVizImage2 = QPixmap('sid.jpg')
         self.graphVizImage2 = QLabel()
         #graphVizImage2 = SquareLineEdit()
         #graphVizImage2.setDisabled(True)
         
-        query2VL = QVBoxLayout()
-        query2VL.addWidget(self.queryText2)
-        query2VL.addWidget(queryDropDown2)
-        query2VL.addWidget(generateButton2)
-        query2VL.addWidget(explainText2)
-        query2VL.addWidget(self.graphVizImage2)
+        # query2VL = QVBoxLayout()
+        # query2VL.addWidget(self.queryText2)
+        # query2VL.addWidget(queryDropDown2)
+        # query2VL.addWidget(generateButton2)
+        # query2VL.addWidget(explainText2)
+        # query2VL.addWidget(self.graphVizImage2)
         
         # Create title
         titleLabel = QLabel("Finally started on this project")
         testingMessage =  "HAHA"
         self.testingMessageLabel = QLabel(testingMessage)
         
-        mainLayout = QHBoxLayout()
-        mainLayout.addLayout(query1VL)
-        mainLayout.addLayout(query2VL)
+        mainLayout = QGridLayout()
+
+        mainLayout.addWidget(self.queryText1, 0, 0)
+        mainLayout.addWidget(self.queryDropDown1, 1, 0)
+        mainLayout.addWidget(generateButton1, 2, 0)
+        mainLayout.addWidget(explainText1, 3, 0)
+        mainLayout.addWidget(self.graphVizImage1, 4, 0)
+
+        mainLayout.addWidget(self.queryText2, 0, 1)
+        mainLayout.addWidget(queryDropDown2, 1, 1)
+        mainLayout.addWidget(generateButton2, 2, 1)
+        mainLayout.addWidget(explainText2, 3, 1)
+        mainLayout.addWidget(self.graphVizImage2, 4, 1)
+
+        mainLayout.setRowStretch(0, 0)
+        mainLayout.setRowStretch(1, 0)
+        mainLayout.setRowStretch(2, 0)
+        mainLayout.setRowStretch(3, 0)
+        mainLayout.setRowStretch(4, 1)
+        mainLayout.setColumnStretch(0, 1)
+        mainLayout.setColumnStretch(1, 1)
+        # mainLayout = QHBoxLayout()
+        # mainLayout.addLayout(query1VL)
+        # mainLayout.addLayout(query2VL)
         # Set the main layout for the widget
         self.setLayout(mainLayout)
         
@@ -96,7 +120,7 @@ class MyWidget(QWidget):
         else:
             self.queryText1.setText(str(index))
     def carryOverText(self):
-        self.queryText2.setText(self.queryText1.text())
+        self.queryText2.setText(self.queryText1.toPlainText())
     
     def treeDisplay(self, plan):
         """
@@ -129,8 +153,12 @@ class MyWidget(QWidget):
 
             self.im = QPixmap("./QueryPlan.png")
             self.graphVizImage2.setPixmap(self.im)
-            self.graphVizImage2.setFixedHeight(self.im.size().height())
-            self.graphVizImage2.setFixedWidth(self.im.size().width())
+            # self.graphVizImage2.setScaledContents(True)
+            # self.graphVizImage2.setFixedHeight(self.im.size().height())
+            # self.graphVizImage2.setFixedWidth(self.im.size().width())
+            self.graphVizImage2.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
+            self.graphVizImage1.setPixmap(self.im)
+            self.graphVizImage1.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
 
     def getAdjList(self, queryPlan, result):
         """
