@@ -6,13 +6,14 @@ select
 from
 	nation,customer,orders
 where
-	c_custkey = o_custkey AND
+	c_custkey >= o_custkey AND
 	c_nationkey = n_nationkey AND
 	n_regionkey = 2 AND
 	c_custkey >= 10000 AND
 	c_acctbal < 0 AND
-	o_orderstatus = 'O' AND
-	o_orderdate >= DATE '1998-01-27'	
+	NOT o_orderstatus = 'O' AND
+	o_orderdate >= DATE '1995-01-27' AND
+	NOT c_name LIKE '123'
 group by
 	c_custkey,
 	n_name

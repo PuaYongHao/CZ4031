@@ -15,14 +15,12 @@ class SquareLineEdit(QTextEdit):
 
 
 class MyWidget(QWidget):
-    
+    connection = None
     def __init__(self,password):
         super().__init__()
 
-        self.connection = obj = psycopg2.connect(
-                database="TPC-H", user='postgres', password=password, host='127.0.0.1', port= '5432')
-        self.connection.autocommit = True
-        self.cursor = self.connection.cursor()
+        MyWidget.connection.autocommit = True
+        self.cursor = MyWidget.connection.cursor()
         #cursor = self.connection.cursor()
 
         self.nodeList = list()
@@ -223,20 +221,20 @@ class MyWidget(QWidget):
     #generate old query order
     def generateOldOrder(self):
         query = self.queryText1.toPlainText()
-        result = self.queryDB(query,self.connection)
+        result = self.queryDB(query)
         #print(result)
         self.leftadj, self.leftlist = self.treeDisplay(result["Plan"],1)
         
         
-    def queryDB(self,query,connection):
-        cursor = connection.cursor()
+    def queryDB(self,query):
+        cursor = MyWidget.connection.cursor()
         cursor.execute(
                 f"EXPLAIN (FORMAT JSON) {'''{}'''}".format(query))
         return cursor.fetchall()[0][0][0]
 
     def generateNewOrder(self):
         query = self.queryText2.toPlainText()
-        result = self.queryDB(query,self.connection)
+        result = self.queryDB(query)
         #print(result)
         self.rightadj, self.rightlist = self.treeDisplay(result["Plan"],2)
         output = generateDifference(self.leftadj,self.leftlist,self.rightadj,self.rightlist)
