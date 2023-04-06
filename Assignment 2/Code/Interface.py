@@ -216,24 +216,26 @@ class MyWidget(QWidget):
         fd.close()
         self.queryText2.setText(sqlFile)
     
+    #carry over text from the left text area to the right text area
     def carryOverText(self):
         text = self.queryText1.toPlainText()
         self.queryText2.setText(text)
 
-    #generate old query order
+    #take in old query and process
     def generateOldOrder(self):
         query = self.queryText1.toPlainText()
         self.result1 = self.queryDB(query)
-        print(self.result1)
+        #print(self.result1)
         self.leftadj, self.leftlist = self.treeDisplay(self.result1["Plan"],1)
         
-        
+    #query postgres DB for join order
     def queryDB(self,query):
         cursor = MyWidget.connection.cursor()
         cursor.execute(
                 f"EXPLAIN (FORMAT JSON) {'''{}'''}".format(query))
         return cursor.fetchall()[0][0][0]
-
+    
+    #take in new query and process
     def generateNewOrder(self):
         query = self.queryText2.toPlainText()
         self.result2 = self.queryDB(query)
@@ -241,8 +243,14 @@ class MyWidget(QWidget):
         self.rightadj, self.rightlist = self.treeDisplay(self.result2["Plan"],2)
         output = generateDifference(self.leftadj,self.leftlist,self.rightadj,self.rightlist)
         #output = generateDifference(self.result1["Plan"],self.result2["Plan"])
+        #print(self.leftadj)
+        #print(self.leftlist)
+        #print("gap")
+        #print(self.rightadj)
+        #print(self.rightlist)
+        #print(output)
 
-    
+    #print the image of the join order
     def treeDisplay(self, plan,index):
         #TODO Display the difference in red, maybe split into another function?
         f = graphviz.Graph()
@@ -329,7 +337,7 @@ class MyWidget(QWidget):
         else:
             # Name the parent node, increment the count
             planNodeType = f"{queryPlan['Node Type']}#{self.nodeCount}"
-            print("parent: ", queryPlan['Node Type'], " and ", self.nodeCount)
+            #print("parent: ", queryPlan['Node Type'], " and ", self.nodeCount)
             if planNodeType not in self.nodeList:
                 self.nodeList.append(planNodeType)
 
