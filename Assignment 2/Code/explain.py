@@ -1,7 +1,6 @@
 #natural language
 #switch statement or some shit
 
-
 # generic
 # nested_loop
 # sequential_scan
@@ -35,3 +34,13 @@ def statement(nodeType):
         return
     else:
         return
+    
+
+    
+def generateDifference(ladj,llist,radj,rlist):
+    #implement post order traversal to generate the list
+    print("left adj: ",ladj)
+    print("left list: ",llist)
+    #if 'plans' not in queryData:
+
+    return

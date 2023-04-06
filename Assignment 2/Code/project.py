@@ -65,5 +65,5 @@ if __name__ == '__main__':
     widget = Interface.MyWidget(password)
     widget.setTestingMessage(sqlFile)
     widget.show()
-    widget.treeDisplay(result[0][0][0]["Plan"])
+    #widget.treeDisplay(result[0][0][0]["Plan"])
     sys.exit(app.exec())
