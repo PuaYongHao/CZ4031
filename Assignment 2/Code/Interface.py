@@ -199,6 +199,13 @@ class MyWidget(QWidget):
                     f"{queryPlan['Node Type']}#{self.nodeCount}")
             self.nodeList.append(
                 f"{queryPlan['Relation Name']}#{self.nodeCount}")
+            planNode = f"{queryPlan['Node Type']}#{self.nodeCount}"
+            if planNode in result:
+                result[planNode].append(f"{queryPlan['Relation Name']}#{self.nodeCount}")
+            else:
+                #print("HIII ", subplan)
+                result[planNode] = [f"{queryPlan['Relation Name']}#{self.nodeCount}"]
+            
             #print("map this ", queryPlan['Node Type'], " to ", queryPlan['Relation Name'])
             #result[queryPlan['Node Type']] = queryPlan['Relation Name']
             curIterCount = self.nodeCount
@@ -232,13 +239,6 @@ class MyWidget(QWidget):
                 else:
                     result[planNodeType] = [subplanNodeType]
                 
-                #CHeck if nodetype contain Scan
-                if("Scan" in subplanNodeType):
-                    if subplanNodeType in result:
-                        result[subplanNodeType].append(f"{subplan['Relation Name']}#{nextIterCount}")
-                    else:
-                        #print("HIII ", subplan)
-                        result[subplanNodeType] = [f"{subplan['Relation Name']}#{nextIterCount}"]
                     
             #print("finall", result)
             # return curIterCount (OR, in the 1st iteration, return the final result)
