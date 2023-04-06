@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QComboBox,QApplication, QWidget, QLabel, QTextEdit, 
 from PyQt6.QtGui import QPixmap
 import graphviz
 import psycopg2
-import copy
+from explain import generateDifference
 
 
 class SquareLineEdit(QTextEdit):
@@ -224,7 +224,9 @@ class MyWidget(QWidget):
     def generateOldOrder(self):
         query = self.queryText1.toPlainText()
         result = self.queryDB(query,self.connection)
-        print(result)
+        #print(result)
+        self.leftadj, self.leftlist = self.treeDisplay(result["Plan"],1)
+        
         
     def queryDB(self,query,connection):
         cursor = connection.cursor()
@@ -232,12 +234,15 @@ class MyWidget(QWidget):
                 f"EXPLAIN (FORMAT JSON) {'''{}'''}".format(query))
         return cursor.fetchall()[0][0][0]
 
-    def generateNewOrder(self,connection):
+    def generateNewOrder(self):
         query = self.queryText2.toPlainText()
         result = self.queryDB(query,self.connection)
-        print(result)
+        #print(result)
+        self.rightadj, self.rightlist = self.treeDisplay(result["Plan"],2)
+        output = generateDifference(self.leftadj,self.leftlist,self.rightadj,self.rightlist)
+
     
-    def treeDisplay(self, plan):
+    def treeDisplay(self, plan,index):
         #TODO Display the difference in red, maybe split into another function?
         f = graphviz.Graph()
 
@@ -248,15 +253,16 @@ class MyWidget(QWidget):
             self.el1.setText(f'ERROR: Tree visualisation failed. Please check your query.\n{plan}')
         else:
             adjList = self.getAdjList(plan, {})[0]
-            print("adj List: ",adjList)
+            #print("adj List: ",adjList)
             nodeList = self.nodeList
-            print("Node List: ",nodeList)
+            #print("Node List: ",nodeList)
 
             self.nodeCount = 1
             self.nodeList = list()
 
             for node in nodeList:
                 name = node.split('#')[0]
+                print(node, name)
                 f.node(node, name)
 
             for annotate in adjList:
@@ -267,13 +273,20 @@ class MyWidget(QWidget):
             f.render("QueryPlan", format="png", view=False)
 
             self.im = QPixmap("./QueryPlan.png")
-            self.graphVizImage2.setPixmap(self.im)
-            # self.graphVizImage2.setScaledContents(True)
+            if(index == 1):
+                self.graphVizImage1.setPixmap(self.im)
+                self.graphVizImage1.setScaledContents(True)
+                self.graphVizImage1.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
+
+            else:
+                self.graphVizImage2.setPixmap(self.im)
+                self.graphVizImage2.setScaledContents(True)
             # self.graphVizImage2.setFixedHeight(self.im.size().height())
             # self.graphVizImage2.setFixedWidth(self.im.size().width())
-            self.graphVizImage2.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
-            self.graphVizImage1.setPixmap(self.im)
-            self.graphVizImage1.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
+                self.graphVizImage2.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
+            
+            
+            return adjList, nodeList
 
     def getAdjList(self, queryPlan, result):
         """
