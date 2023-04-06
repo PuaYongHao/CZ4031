@@ -1,19 +1,29 @@
+with revenue (supplier_no, total_revenue) as (
+	select
+		l_suppkey,
+		sum(l_extendedprice * (1 - l_discount))
+	from
+		lineitem
+	group by
+		l_suppkey
+)
+
 select
-	o_orderpriority,
-	count(*) as order_count
+	s_suppkey,
+	s_name,
+	s_address,
+	s_phone,
+	total_revenue
 from
-	orders
+	supplier,
+	revenue
 where
-    exists (
+	s_suppkey = supplier_no
+	and total_revenue = (
 		select
-			*
+			max(total_revenue)
 		from
-			lineitem
-		where
-			l_orderkey = o_orderkey
-			and l_commitdate < l_receiptdate
+			revenue
 	)
-group by
-	o_orderpriority
 order by
-	o_orderpriority;
+	s_suppkey;

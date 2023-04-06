@@ -1,9 +1,16 @@
 select
-	sum(l_extendedprice * l_discount) as revenue
+	sum(l_extendedprice) / 7.0 as avg_yearly
 from
-	lineitem
+	lineitem,
+	part
 where
-	l_shipdate >= '1996-03-13'
-	and l_shipdate < '1997-03-13'
-	and l_discount between 0.04 and 0.06
-	and l_quantity < 10.00;
+	p_partkey = l_partkey
+	and p_brand = 'Brand#13'
+	and l_quantity < (
+		select
+			0.2 * avg(l_quantity)
+		from
+			lineitem
+		where
+			l_partkey = p_partkey
+	);

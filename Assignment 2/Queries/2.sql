@@ -1,40 +1,20 @@
 select
-	s_acctbal,
-	s_name,
-	n_name,
-	p_partkey,
-	p_mfgr,
-	s_address,
-	s_phone,
-	s_comment
+	c_count,
+	count(*) as custdist
 from
-	part,
-	supplier,
-	partsupp,
-	nation,
-	region
-where
-	p_partkey = ps_partkey
-	and s_suppkey = ps_suppkey
-	and s_nationkey = n_nationkey
-	and n_regionkey = r_regionkey
-	and ps_supplycost = (
+	(
 		select
-			min(ps_supplycost)
+			c_custkey,
+			count(o_orderkey)
 		from
-			partsupp,
-			supplier,
-			nation,
-			region
-		where
-			p_partkey = ps_partkey
-			and s_suppkey = ps_suppkey
-			and s_nationkey = n_nationkey
-			and n_regionkey = r_regionkey
-			and r_name = 'ASIA'
-	)
+			customer left outer join orders on
+				c_custkey = o_custkey
+				and o_comment not like '%packages%unusual%'
+		group by
+			c_custkey
+	) as c_orders (c_custkey, c_count)
+group by
+	c_count
 order by
-	s_acctbal desc,
-	n_name,
-	s_name,
-	p_partkey;
+	custdist desc,
+	c_count desc;

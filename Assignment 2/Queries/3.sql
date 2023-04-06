@@ -1,20 +1,13 @@
 select
-	l_orderkey,
-	sum(l_extendedprice * (1 - l_discount)) as revenue,
-	o_orderdate,
-	o_shippriority
+	100.00 * sum(case
+		when p_type like 'PROMO%'
+			then l_extendedprice * (1 - l_discount)
+		else 0
+	end) / sum(l_extendedprice * (1 - l_discount)) as promo_revenue
 from
-	customer,
-	orders,
-	lineitem
+	lineitem,
+	part
 where
-	c_mktsegment = '1'
-	and c_custkey = o_custkey
-	and l_orderkey = o_orderkey
-group by
-	l_orderkey,
-	o_orderdate,
-	o_shippriority
-order by
-	revenue desc,
-	o_orderdate;
+	l_partkey = p_partkey
+	and l_shipdate >= '1996-03-13'
+	and l_shipdate < '1996-04-13'
