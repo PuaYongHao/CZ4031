@@ -15,8 +15,14 @@ class SquareLineEdit(QTextEdit):
 
 class MyWidget(QWidget):
     
-    def __init__(self):
+    def __init__(self,password):
         super().__init__()
+
+        self.connection = obj = psycopg2.connect(
+                database="TPC-H", user='postgres', password=password, host='127.0.0.1', port= '5432')
+        self.connection.autocommit = True
+        self.cursor = self.connection.cursor()
+        #cursor = self.connection.cursor()
 
         self.nodeList = list()
         self.nodeCount = 1
@@ -38,6 +44,7 @@ class MyWidget(QWidget):
         
         generateButton1 = QPushButton()
         generateButton1.setText("generate")
+        generateButton1.clicked.connect(self.generateOldOrder)
         
         explainText1 = SquareLineEdit()
         explainText1.setReadOnly(True)
@@ -65,6 +72,7 @@ class MyWidget(QWidget):
         
         generateButton2 = QPushButton()
         generateButton2.setText("generate")
+        generateButton2.clicked.connect(self.generateNewOrder)
         
         explainText2 = SquareLineEdit()
         explainText2.setReadOnly(True)
@@ -140,6 +148,23 @@ class MyWidget(QWidget):
             self.queryText1.setText(str(index))
     def carryOverText(self):
         self.queryText2.setText(self.queryText1.toPlainText())
+
+    #generate old query order
+    def generateOldOrder(self):
+        query = self.queryText1.toPlainText()
+        result = self.queryDB(query,self.connection)
+        print(result)
+        
+    def queryDB(self,query,connection):
+        cursor = connection.cursor()
+        cursor.execute(
+                f"EXPLAIN (FORMAT JSON) {'''{}'''}".format(query))
+        return cursor.fetchall()[0][0][0]
+
+    def generateNewOrder(self,connection):
+        query = self.queryText2.toPlainText()
+        result = self.queryDB(query,self.connection)
+        print(result)
     
     def treeDisplay(self, plan):
         #TODO Display the difference in red, maybe split into another function?
