@@ -14,7 +14,8 @@ where
 	o_orderstatus = 'O' AND
 	o_orderdate >= DATE '1998-01-27'	
 group by
-	c_custkey
+	c_custkey,
+	n_name
 order by
 	total_spend DESC,
 	n_name,

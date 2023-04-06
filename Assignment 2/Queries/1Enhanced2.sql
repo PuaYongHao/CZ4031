@@ -12,12 +12,13 @@ where
 	NOT n_regionkey >=3 AND
 	n_nationkey > 5 AND
 	o_totalprice >= 10000 AND
-	NOT c_mktsegment = HOUSEHOLD AND
+	NOT c_mktsegment = 'HOUSEHOLD' AND
 	o_orderpriority = '5-LOW' OR
 	o_orderpriority = '1-URGENT' AND
 	o_orderstatus = 'F'
 group by
-	c_custkey
+	c_custkey,
+	n_name
 order by
 	total_spend DESC,
 	n_name,

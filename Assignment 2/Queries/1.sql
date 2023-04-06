@@ -11,7 +11,8 @@ where
 	NOT n_regionkey = 0 AND
 	NOT n_regionkey >=3
 group by
-	c_custkey
+	c_custkey,
+	n_name
 order by
 	total_spend DESC,
 	n_name,
