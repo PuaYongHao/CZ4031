@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QComboBox,QApplication, QWidget, QLabel, QTextEdit, 
 from PyQt6.QtGui import QPixmap
 import graphviz
 import psycopg2
+import copy
 
 
 class SquareLineEdit(QTextEdit):
@@ -37,9 +38,8 @@ class MyWidget(QWidget):
         
         self.queryDropDown1 = QComboBox()
         self.queryDropDown1.addItem("None")
-        self.queryDropDown1.addItem("Query1")
-        self.queryDropDown1.addItem("Query2")
-        self.queryDropDown1.addItem("Query3")
+        for i in range (1,8):
+            self.queryDropDown1.addItem("Query"+str(i))
         self.queryDropDown1.currentIndexChanged.connect(self.updateLineEdit)
         
         generateButton1 = QPushButton()
@@ -64,11 +64,15 @@ class MyWidget(QWidget):
 
         #Query2
         self.queryText2 = SquareLineEdit()
+        self.queryText2.setLineWrapColumnOrWidth(800) #Here you set the width you want
+        self.queryText2.setLineWrapMode(QTextEdit.LineWrapMode.FixedPixelWidth)
+        self.queryText2.setStyleSheet("color: rgb(255,0,0)")        
         
         self.queryDropDown2 = QComboBox()
         self.queryDropDown2.addItem("Where customerID = XXX")
         self.queryDropDown2.addItem("Where customerName = XXX")
         self.queryDropDown2.addItem("Select * from orders")
+        self.queryDropDown2.currentIndexChanged.connect(self.getQuery2)
         
         generateButton2 = QPushButton()
         generateButton2.setText("generate")
@@ -125,50 +129,96 @@ class MyWidget(QWidget):
     def setTestingMessage(self, message):
         #self.testingMessageLabel.setText(message)
         self.queryText1.setText(message)
-
-    def updateLineEdit(self, index):
+        
+    def updateLineEdit(self):
         index = self.queryDropDown1.currentIndex()
         if index == 0:
             self.queryText1.setText("")
+            self.queryDropDown2.clear()
+            self.queryDropDown2.setEnabled = False
         elif index == 1:
-            self.queryText1.setText(str(index))
+            fd = open('../Queries/1.sql', 'r')
+            sqlFile = fd.read()
+            fd.close()
+            self.queryText1.setText(sqlFile)
             self.queryDropDown2.clear()
-            #TODO Read from text/csv file
-            #for each x in fileread:
-            self.queryDropDown2.addItem("x1")
-            self.queryDropDown2.addItem("y1")
+            self.queryDropDown2.setEnabled = True
+            self.queryDropDown2.addItem("Query1 Enhanced1")
+            self.queryDropDown2.addItem("Query1 Enhanced2")
         elif index == 2:
-            self.queryText1.setText(str(index))
+            fd = open('../Queries/2.sql', 'r')
+            sqlFile = fd.read()
+            fd.close()
+            self.queryText1.setText(sqlFile)
             self.queryDropDown2.clear()
-            #TODO Read from text/csv file
-            #for each x in fileread:
-            self.queryDropDown2.addItem("x2")
-            self.queryDropDown2.addItem("y2")
+            self.queryDropDown2.setEnabled = True
+            self.queryDropDown2.addItem("Query2 Enhanced1")
+            self.queryDropDown2.addItem("Query2 Enhanced2")
         elif index == 3:
-            self.queryText1.setText(str(index))
+            fd = open('../Queries/3.sql', 'r')
+            sqlFile = fd.read()
+            fd.close()
+            self.queryText1.setText(sqlFile)
             self.queryDropDown2.clear()
-            #TODO Read from text/csv file
-            #for each x in fileread:
-            self.queryDropDown2.addItem("x2")
-            self.queryDropDown2.addItem("y2")
+            self.queryDropDown2.setEnabled = True
+            self.queryDropDown2.addItem("Query3 Enhanced1")
+            self.queryDropDown2.addItem("Query3 Enhanced2")
         elif index == 4:
-            self.queryText1.setText(str(index))
+            fd = open('../Queries/4.sql', 'r')
+            sqlFile = fd.read()
+            fd.close()
+            self.queryText1.setText(sqlFile)
             self.queryDropDown2.clear()
-            #TODO Read from text/csv file
-            #for each x in fileread:
-            self.queryDropDown2.addItem("x2")
-            self.queryDropDown2.addItem("y2")
+            self.queryDropDown2.setEnabled = True
+            self.queryDropDown2.addItem("Query4 Enhanced1")
+            self.queryDropDown2.addItem("Query4 Enhanced2")
         elif index == 5:
-            self.queryText1.setText(str(index))
+            fd = open('../Queries/5.sql', 'r')
+            sqlFile = fd.read()
+            fd.close()
+            self.queryText1.setText(sqlFile)
             self.queryDropDown2.clear()
-            #TODO Read from text/csv file
-            #for each x in fileread:
-            self.queryDropDown2.addItem("x2")
-            self.queryDropDown2.addItem("y2")
+            self.queryDropDown2.setEnabled = True
+            self.queryDropDown2.addItem("Query5 Enhanced1")
+            self.queryDropDown2.addItem("Query5 Enhanced2")
+        elif index == 6:
+            fd = open('../Queries/6.sql', 'r')
+            sqlFile = fd.read()
+            fd.close()
+            self.queryText1.setText(sqlFile)
+            self.queryDropDown2.clear()
+            self.queryDropDown2.setEnabled = True
+            self.queryDropDown2.addItem("Query6 Enhanced1")
+            self.queryDropDown2.addItem("Query6 Enhanced2")
+        elif index == 7:
+            fd = open('../Queries/7.sql', 'r')
+            sqlFile = fd.read()
+            fd.close()
+            self.queryText1.setText(sqlFile)
+            self.queryDropDown2.clear()
+            self.queryDropDown2.setEnabled = True
+            self.queryDropDown2.addItem("Query7 Enhanced1")
+            self.queryDropDown2.addItem("Query7 Enhanced2")
         else:
-            self.queryText1.setText(str(index))
+            self.queryText1.setText("nothing to be found")
+    
+    def getQuery2(self):
+        index = self.queryDropDown1.currentIndex()
+        if(index == 0):
+            return
+        index2 = self.queryDropDown2.currentIndex()
+        if(index2 + 1 <= 0):
+            index2 = 1
+        filename = ('../Queries/')
+        filename = filename + str(index) + "Enhanced" + str(index2+1) + ".sql"
+        fd = open(filename, 'r')
+        sqlFile = fd.read()
+        fd.close()
+        self.queryText2.setText(sqlFile)
+    
     def carryOverText(self):
-        self.queryText2.setText(self.queryText1.toPlainText())
+        text = self.queryText1.toPlainText()
+        self.queryText2.setText(text)
 
     #generate old query order
     def generateOldOrder(self):
