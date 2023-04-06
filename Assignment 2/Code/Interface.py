@@ -1,6 +1,6 @@
 import sys
 from PyQt6.QtCore import Qt,QSize
-from PyQt6.QtWidgets import QComboBox,QApplication, QWidget, QLabel, QTextEdit, QVBoxLayout, QPushButton, QGridLayout
+from PyQt6.QtWidgets import QComboBox,QApplication, QWidget, QLabel, QTextEdit, QVBoxLayout, QPushButton, QGridLayout, QScrollArea
 from PyQt6.QtGui import QPixmap
 import graphviz
 import psycopg2
@@ -50,6 +50,12 @@ class MyWidget(QWidget):
         
         #graphVizImage = QPixmap('sid.jpg')
         self.graphVizImage1 = QLabel()
+        self.scrollArea1 = QScrollArea()
+        self.scrollArea1.setWidgetResizable(True)
+        self.scrollArea1.setMinimumHeight(300)
+        self.scrollArea1.setMinimumWidth(300)
+        self.scrollArea1.setWidget(self.graphVizImage1)
+
         # self.graphVizImage1 = SquareLineEdit()
         # self.graphVizImage1.setDisabled(True)
         
@@ -82,6 +88,13 @@ class MyWidget(QWidget):
     
         #self.graphVizImage2 = QPixmap('sid.jpg')
         self.graphVizImage2 = QLabel()
+        #self.graphVizImage2 = QScrollArea()
+        self.scrollArea2 = QScrollArea()
+        self.scrollArea2.setWidgetResizable(True)
+        self.scrollArea2.setMinimumHeight(300)
+        self.scrollArea2.setMinimumWidth(300)
+        self.scrollArea2.setWidget(self.graphVizImage2)
+        
         #graphVizImage2 = SquareLineEdit()
         #graphVizImage2.setDisabled(True)
         
@@ -103,13 +116,15 @@ class MyWidget(QWidget):
         mainLayout.addWidget(self.queryDropDown1, 1, 0)
         mainLayout.addWidget(generateButton1, 2, 0)
         # mainLayout.addWidget(explainText1, 3, 0)
-        mainLayout.addWidget(self.graphVizImage1, 3, 0)
+        #mainLayout.addWidget(self.graphVizImage1, 3, 0)
+        mainLayout.addWidget(self.scrollArea1, 3, 0)
 
         mainLayout.addWidget(self.queryText2, 0, 1)
         mainLayout.addWidget(self.queryDropDown2, 1, 1)
         mainLayout.addWidget(generateButton2, 2, 1)
         # mainLayout.addWidget(explainText2, 3, 1)
-        mainLayout.addWidget(self.graphVizImage2, 3, 1)
+        #mainLayout.addWidget(self.graphVizImage2, 3, 1)
+        mainLayout.addWidget(self.scrollArea2, 3, 1)
 
         mainLayout.addWidget(explainText1, 4, 0, 1, 2)
 
@@ -286,13 +301,13 @@ class MyWidget(QWidget):
             if(index == 1):
                 self.graphVizImage1.setPixmap(self.im)
                 self.graphVizImage1.setScaledContents(True)
-                self.graphVizImage1.setMaximumHeight(400)
+                #self.graphVizImage1.setMaximumHeight(400)
                 self.graphVizImage1.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
 
             else:
                 self.graphVizImage2.setPixmap(self.im)
                 self.graphVizImage2.setScaledContents(True)
-                self.graphVizImage2.setMaximumHeight(400)
+                #self.graphVizImage2.setMaximumHeight(400)
                 # self.graphVizImage2.setFixedHeight(self.im.size().height())
                 # self.graphVizImage2.setFixedWidth(self.im.size().width())
                 self.graphVizImage2.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
