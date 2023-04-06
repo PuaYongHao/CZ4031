@@ -136,6 +136,27 @@ class MyWidget(QWidget):
             #for each x in fileread:
             self.queryDropDown2.addItem("x2")
             self.queryDropDown2.addItem("y2")
+        elif index == 3:
+            self.queryText1.setText(str(index))
+            self.queryDropDown2.clear()
+            #TODO Read from text/csv file
+            #for each x in fileread:
+            self.queryDropDown2.addItem("x2")
+            self.queryDropDown2.addItem("y2")
+        elif index == 4:
+            self.queryText1.setText(str(index))
+            self.queryDropDown2.clear()
+            #TODO Read from text/csv file
+            #for each x in fileread:
+            self.queryDropDown2.addItem("x2")
+            self.queryDropDown2.addItem("y2")
+        elif index == 5:
+            self.queryText1.setText(str(index))
+            self.queryDropDown2.clear()
+            #TODO Read from text/csv file
+            #for each x in fileread:
+            self.queryDropDown2.addItem("x2")
+            self.queryDropDown2.addItem("y2")
         else:
             self.queryText1.setText(str(index))
     def carryOverText(self):
