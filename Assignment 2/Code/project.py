@@ -7,8 +7,6 @@ import sys
 #Split db connection function away from main function
 
 
-
-
 if __name__ == '__main__':
     #Ask them for password?
     
@@ -21,6 +19,7 @@ if __name__ == '__main__':
         if(password == "EXIT"):
             print("Exiting application")
             exit()
+            
         try:
         # Connecting to the database and initializing the cursor as class variables
             connection = psycopg2.connect(
@@ -54,7 +53,7 @@ if __name__ == '__main__':
     #     print("-------------")
     #     for z in y:
     #         print("Key: ",z, " = ", y[z])
-    print(result[0][0][0])
+    #print(result[0][0][0])
     
     
     #TODO This need to shift to interface, no nid do here, either that or init function take in the queries files
@@ -63,7 +62,7 @@ if __name__ == '__main__':
     fd.close()
     
     app = Interface.QApplication(sys.argv)
-    widget = Interface.MyWidget()
+    widget = Interface.MyWidget(password)
     widget.setTestingMessage(sqlFile)
     widget.show()
     widget.treeDisplay(result[0][0][0]["Plan"])

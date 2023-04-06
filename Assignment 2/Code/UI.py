@@ -15,36 +15,25 @@ class SquareLineEdit(QTextEdit):
 
 class MyWidget(QWidget):
     
-    def __init__(self,password):
+    def __init__(self):
         super().__init__()
-
-        self.connection = obj = psycopg2.connect(
-                database="TPC-H", user='postgres', password=password, host='127.0.0.1', port= '5432')
-        self.connection.autocommit = True
-        self.cursor = self.connection.cursor()
-        #cursor = self.connection.cursor()
 
         self.nodeList = list()
         self.nodeCount = 1
-        #self.setFixedWidth(1000)
         
         #Query1
         self.queryText1 = SquareLineEdit()
-        self.queryText1.setLineWrapColumnOrWidth(800) #Here you set the width you want
-        self.queryText1.setLineWrapMode(QTextEdit.LineWrapMode.FixedPixelWidth)
-        #self.queryText1.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth)
         self.queryText1.textChanged.connect(self.carryOverText)
         
         self.queryDropDown1 = QComboBox()
         self.queryDropDown1.addItem("None")
-        self.queryDropDown1.addItem("Query1")
-        self.queryDropDown1.addItem("Query2")
-        self.queryDropDown1.addItem("Query3")
+        self.queryDropDown1.addItem("Select * from customer")
+        self.queryDropDown1.addItem("Select * from region")
+        self.queryDropDown1.addItem("Select * from orders")
         self.queryDropDown1.currentIndexChanged.connect(self.updateLineEdit)
         
         generateButton1 = QPushButton()
         generateButton1.setText("generate")
-        generateButton1.clicked.connect(self.generateOldOrder)
         
         explainText1 = SquareLineEdit()
         explainText1.setReadOnly(True)
@@ -65,17 +54,16 @@ class MyWidget(QWidget):
         #Query2
         self.queryText2 = SquareLineEdit()
         
-        self.queryDropDown2 = QComboBox()
-        self.queryDropDown2.addItem("Where customerID = XXX")
-        self.queryDropDown2.addItem("Where customerName = XXX")
-        self.queryDropDown2.addItem("Select * from orders")
+        queryDropDown2 = QComboBox()
+        queryDropDown2.addItem("Select * from customer")
+        queryDropDown2.addItem("Select * from region")
+        queryDropDown2.addItem("Select * from orders")
         
         generateButton2 = QPushButton()
         generateButton2.setText("generate")
-        generateButton2.clicked.connect(self.generateNewOrder)
         
-        explainText2 = SquareLineEdit()
-        explainText2.setReadOnly(True)
+        # explainText2 = SquareLineEdit()
+        # explainText2.setReadOnly(True)
         # explainText2.setDisabled(True)
     
         #self.graphVizImage2 = QPixmap('sid.jpg')
@@ -100,19 +88,21 @@ class MyWidget(QWidget):
         mainLayout.addWidget(self.queryText1, 0, 0)
         mainLayout.addWidget(self.queryDropDown1, 1, 0)
         mainLayout.addWidget(generateButton1, 2, 0)
-        mainLayout.addWidget(explainText1, 3, 0)
-        mainLayout.addWidget(self.graphVizImage1, 4, 0)
+        # mainLayout.addWidget(explainText1, 3, 0)
+        mainLayout.addWidget(self.graphVizImage1, 3, 0)
 
         mainLayout.addWidget(self.queryText2, 0, 1)
-        mainLayout.addWidget(self.queryDropDown2, 1, 1)
+        mainLayout.addWidget(queryDropDown2, 1, 1)
         mainLayout.addWidget(generateButton2, 2, 1)
-        mainLayout.addWidget(explainText2, 3, 1)
-        mainLayout.addWidget(self.graphVizImage2, 4, 1)
+        # mainLayout.addWidget(explainText2, 3, 1)
+        mainLayout.addWidget(self.graphVizImage2, 3, 1)
 
-        mainLayout.setRowStretch(0, 0)
-        mainLayout.setRowStretch(1, 0)
-        mainLayout.setRowStretch(2, 0)
-        mainLayout.setRowStretch(3, 0)
+        mainLayout.addWidget(explainText1, 4, 0, 1, 2)
+
+        mainLayout.setRowStretch(0, 1)
+        mainLayout.setRowStretch(1, 1)
+        mainLayout.setRowStretch(2, 1)
+        mainLayout.setRowStretch(3, 1)
         mainLayout.setRowStretch(4, 1)
         mainLayout.setColumnStretch(0, 1)
         mainLayout.setColumnStretch(1, 1)
@@ -123,72 +113,21 @@ class MyWidget(QWidget):
         self.setLayout(mainLayout)
         
     def setTestingMessage(self, message):
-        #self.testingMessageLabel.setText(message)
-        self.queryText1.setText(message)
+        self.testingMessageLabel.setText(message)
 
     def updateLineEdit(self, index):
         index = self.queryDropDown1.currentIndex()
         if index == 0:
             self.queryText1.setText("")
-        elif index == 1:
-            self.queryText1.setText(str(index))
-            self.queryDropDown2.clear()
-            #TODO Read from text/csv file
-            #for each x in fileread:
-            self.queryDropDown2.addItem("x1")
-            self.queryDropDown2.addItem("y1")
-        elif index == 2:
-            self.queryText1.setText(str(index))
-            self.queryDropDown2.clear()
-            #TODO Read from text/csv file
-            #for each x in fileread:
-            self.queryDropDown2.addItem("x2")
-            self.queryDropDown2.addItem("y2")
-        elif index == 3:
-            self.queryText1.setText(str(index))
-            self.queryDropDown2.clear()
-            #TODO Read from text/csv file
-            #for each x in fileread:
-            self.queryDropDown2.addItem("x2")
-            self.queryDropDown2.addItem("y2")
-        elif index == 4:
-            self.queryText1.setText(str(index))
-            self.queryDropDown2.clear()
-            #TODO Read from text/csv file
-            #for each x in fileread:
-            self.queryDropDown2.addItem("x2")
-            self.queryDropDown2.addItem("y2")
-        elif index == 5:
-            self.queryText1.setText(str(index))
-            self.queryDropDown2.clear()
-            #TODO Read from text/csv file
-            #for each x in fileread:
-            self.queryDropDown2.addItem("x2")
-            self.queryDropDown2.addItem("y2")
         else:
             self.queryText1.setText(str(index))
     def carryOverText(self):
         self.queryText2.setText(self.queryText1.toPlainText())
-
-    #generate old query order
-    def generateOldOrder(self):
-        query = self.queryText1.toPlainText()
-        result = self.queryDB(query,self.connection)
-        print(result)
-        
-    def queryDB(self,query,connection):
-        cursor = connection.cursor()
-        cursor.execute(
-                f"EXPLAIN (FORMAT JSON) {'''{}'''}".format(query))
-        return cursor.fetchall()[0][0][0]
-
-    def generateNewOrder(self,connection):
-        query = self.queryText2.toPlainText()
-        result = self.queryDB(query,self.connection)
-        print(result)
     
     def treeDisplay(self, plan):
-        #TODO Display the difference in red, maybe split into another function?
+        """
+            Function to display the traversal tree
+        """
         f = graphviz.Graph()
 
         #query = self.textEdit.toPlainText()
@@ -198,9 +137,7 @@ class MyWidget(QWidget):
             self.el1.setText(f'ERROR: Tree visualisation failed. Please check your query.\n{plan}')
         else:
             adjList = self.getAdjList(plan, {})[0]
-            print("adj List: ",adjList)
             nodeList = self.nodeList
-            print("Node List: ",nodeList)
 
             self.nodeCount = 1
             self.nodeList = list()
@@ -243,17 +180,6 @@ class MyWidget(QWidget):
             if self.nodeCount == 1:
                 self.nodeList.append(
                     f"{queryPlan['Node Type']}#{self.nodeCount}")
-            self.nodeList.append(
-                f"{queryPlan['Relation Name']}#{self.nodeCount}")
-            planNode = f"{queryPlan['Node Type']}#{self.nodeCount}"
-            if planNode in result:
-                result[planNode].append(f"{queryPlan['Relation Name']}#{self.nodeCount}")
-            else:
-                #print("HIII ", subplan)
-                result[planNode] = [f"{queryPlan['Relation Name']}#{self.nodeCount}"]
-            
-            #print("map this ", queryPlan['Node Type'], " to ", queryPlan['Relation Name'])
-            #result[queryPlan['Node Type']] = queryPlan['Relation Name']
             curIterCount = self.nodeCount
             self.nodeCount += 1
             return [result, curIterCount]
@@ -262,7 +188,6 @@ class MyWidget(QWidget):
         else:
             # Name the parent node, increment the count
             planNodeType = f"{queryPlan['Node Type']}#{self.nodeCount}"
-            print("parent: ", queryPlan['Node Type'], " and ", self.nodeCount)
             if planNodeType not in self.nodeList:
                 self.nodeList.append(planNodeType)
 
@@ -284,9 +209,7 @@ class MyWidget(QWidget):
                     result[planNodeType].append(subplanNodeType)
                 else:
                     result[planNodeType] = [subplanNodeType]
-                
-                    
-            #print("finall", result)
+
             # return curIterCount (OR, in the 1st iteration, return the final result)
             return [result, curIterCount]
 
@@ -295,3 +218,32 @@ class MyWidget(QWidget):
 
 
 
+if __name__ == '__main__':
+    conn = psycopg2.connect(
+        database="TPC-H", user='postgres', password='123456', host='127.0.0.1', port= '5432'
+    )
+    
+    conn.autocommit = True
+    cursor = conn.cursor()
+    cursor.execute(
+                f"EXPLAIN (FORMAT JSON) {'''SELECT * from Region, customer Where region.r_regionkey = 0'''}")
+                #f"EXPLAIN (FORMAT JSON) {'''SELECT * from Region'''}")
+    
+    #cursor.execute('''SELECT * from Region''')
+    result = cursor.fetchall()
+    #print(result)
+    # for x in result[0][0][0]["Plan"]:
+    #     if(x != "Plans"):
+    #         print("Key: ", x, " = ", result[0][0][0]["Plan"][x])
+    # for y in result[0][0][0]["Plan"]["Plans"]:
+    #     print("-------------")
+    #     for z in y:
+    #         print("Key: ",z, " = ", y[z])
+    print(result[0][0][0])
+    
+    app = QApplication(sys.argv)
+    widget = MyWidget()
+    widget.setTestingMessage("hello")
+    widget.show()
+    widget.treeDisplay(result[0][0][0]["Plan"])
+    sys.exit(app.exec())
