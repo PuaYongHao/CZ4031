@@ -35,12 +35,17 @@ def statement(nodeType):
     else:
         return
     
+def createList(query):
+    if "Plans" in query:
+        return 
+
 
     
-def generateDifference(ladj,llist,radj,rlist):
+def generateDifference(leftA,leftL,rightA,rightL):
     #implement post order traversal to generate the list
-    print("left adj: ",ladj)
-    print("left list: ",llist)
-    #if 'plans' not in queryData:
+    order1 = []
+    order2 = []
+    
+        
 
     return

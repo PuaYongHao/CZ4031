@@ -223,9 +223,9 @@ class MyWidget(QWidget):
     #generate old query order
     def generateOldOrder(self):
         query = self.queryText1.toPlainText()
-        result = self.queryDB(query,self.connection)
-        #print(result)
-        self.leftadj, self.leftlist = self.treeDisplay(result["Plan"],1)
+        self.result1 = self.queryDB(query,self.connection)
+        print(self.result1)
+        self.leftadj, self.leftlist = self.treeDisplay(self.result1["Plan"],1)
         
         
     def queryDB(self,query,connection):
@@ -236,10 +236,16 @@ class MyWidget(QWidget):
 
     def generateNewOrder(self):
         query = self.queryText2.toPlainText()
-        result = self.queryDB(query,self.connection)
-        #print(result)
-        self.rightadj, self.rightlist = self.treeDisplay(result["Plan"],2)
+        self.result2 = self.queryDB(query,self.connection)
+        #print(self.result2)
+        self.rightadj, self.rightlist = self.treeDisplay(self.result2["Plan"],2)
+        # print(self.leftadj)
+        # print(self.leftlist)
+        # print("gap")
+        # print(self.rightadj)
+        # print(self.rightlist)
         output = generateDifference(self.leftadj,self.leftlist,self.rightadj,self.rightlist)
+        #output = generateDifference(self.result1["Plan"],self.result2["Plan"])
 
     
     def treeDisplay(self, plan,index):
@@ -262,10 +268,11 @@ class MyWidget(QWidget):
 
             for node in nodeList:
                 name = node.split('#')[0]
-                print(node, name)
+                #print(node, name)
                 f.node(node, name)
 
             for annotate in adjList:
+                #print(annotate)
                 if len(adjList[annotate]) != 0:
                     for annotateString in adjList[annotate]:
                         f.edge(annotate, annotateString)
