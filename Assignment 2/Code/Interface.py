@@ -15,14 +15,12 @@ class SquareLineEdit(QTextEdit):
 
 
 class MyWidget(QWidget):
-    
+    connection = None
     def __init__(self,password):
         super().__init__()
 
-        self.connection = obj = psycopg2.connect(
-                database="TPC-H", user='postgres', password=password, host='127.0.0.1', port= '5432')
-        self.connection.autocommit = True
-        self.cursor = self.connection.cursor()
+        MyWidget.connection.autocommit = True
+        self.cursor = MyWidget.connection.cursor()
         #cursor = self.connection.cursor()
 
         self.nodeList = list()
@@ -78,8 +76,8 @@ class MyWidget(QWidget):
         generateButton2.setText("generate")
         generateButton2.clicked.connect(self.generateNewOrder)
         
-        explainText2 = SquareLineEdit()
-        explainText2.setReadOnly(True)
+        # explainText2 = SquareLineEdit()
+        # explainText2.setReadOnly(True)
         # explainText2.setDisabled(True)
     
         #self.graphVizImage2 = QPixmap('sid.jpg')
@@ -104,14 +102,16 @@ class MyWidget(QWidget):
         mainLayout.addWidget(self.queryText1, 0, 0)
         mainLayout.addWidget(self.queryDropDown1, 1, 0)
         mainLayout.addWidget(generateButton1, 2, 0)
-        mainLayout.addWidget(explainText1, 3, 0)
-        mainLayout.addWidget(self.graphVizImage1, 4, 0)
+        # mainLayout.addWidget(explainText1, 3, 0)
+        mainLayout.addWidget(self.graphVizImage1, 3, 0)
 
         mainLayout.addWidget(self.queryText2, 0, 1)
         mainLayout.addWidget(self.queryDropDown2, 1, 1)
         mainLayout.addWidget(generateButton2, 2, 1)
-        mainLayout.addWidget(explainText2, 3, 1)
-        mainLayout.addWidget(self.graphVizImage2, 4, 1)
+        # mainLayout.addWidget(explainText2, 3, 1)
+        mainLayout.addWidget(self.graphVizImage2, 3, 1)
+
+        mainLayout.addWidget(explainText1, 4, 0, 1, 2)
 
         mainLayout.setRowStretch(0, 0)
         mainLayout.setRowStretch(1, 0)
@@ -223,27 +223,22 @@ class MyWidget(QWidget):
     #generate old query order
     def generateOldOrder(self):
         query = self.queryText1.toPlainText()
-        self.result1 = self.queryDB(query,self.connection)
+        self.result1 = self.queryDB(query)
         print(self.result1)
         self.leftadj, self.leftlist = self.treeDisplay(self.result1["Plan"],1)
         
         
-    def queryDB(self,query,connection):
-        cursor = connection.cursor()
+    def queryDB(self,query):
+        cursor = MyWidget.connection.cursor()
         cursor.execute(
                 f"EXPLAIN (FORMAT JSON) {'''{}'''}".format(query))
         return cursor.fetchall()[0][0][0]
 
     def generateNewOrder(self):
         query = self.queryText2.toPlainText()
-        self.result2 = self.queryDB(query,self.connection)
-        #print(self.result2)
+        self.result2 = self.queryDB(query)
+        #print(result)
         self.rightadj, self.rightlist = self.treeDisplay(self.result2["Plan"],2)
-        # print(self.leftadj)
-        # print(self.leftlist)
-        # print("gap")
-        # print(self.rightadj)
-        # print(self.rightlist)
         output = generateDifference(self.leftadj,self.leftlist,self.rightadj,self.rightlist)
         #output = generateDifference(self.result1["Plan"],self.result2["Plan"])
 
@@ -283,13 +278,15 @@ class MyWidget(QWidget):
             if(index == 1):
                 self.graphVizImage1.setPixmap(self.im)
                 self.graphVizImage1.setScaledContents(True)
+                self.graphVizImage1.setMaximumHeight(400)
                 self.graphVizImage1.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
 
             else:
                 self.graphVizImage2.setPixmap(self.im)
                 self.graphVizImage2.setScaledContents(True)
-            # self.graphVizImage2.setFixedHeight(self.im.size().height())
-            # self.graphVizImage2.setFixedWidth(self.im.size().width())
+                self.graphVizImage2.setMaximumHeight(400)
+                # self.graphVizImage2.setFixedHeight(self.im.size().height())
+                # self.graphVizImage2.setFixedWidth(self.im.size().width())
                 self.graphVizImage2.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
             
             

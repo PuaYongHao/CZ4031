@@ -22,10 +22,10 @@ if __name__ == '__main__':
             
         try:
         # Connecting to the database and initializing the cursor as class variables
-            connection = psycopg2.connect(
+            Interface.MyWidget.connection = psycopg2.connect(
                 database="TPC-H", user='postgres', password=password, host='127.0.0.1', port= '5432')
-            connection.autocommit = True
-            cursor = connection.cursor()
+            Interface.MyWidget.connection.autocommit = True
+            cursor = Interface.MyWidget.connection.cursor()
             print("Connected to PostgreSQL successfully!")
             conSuccessful = True
         except (Exception, psycopg2.Error) as error:
