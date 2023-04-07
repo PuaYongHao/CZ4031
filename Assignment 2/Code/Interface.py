@@ -40,9 +40,9 @@ class MyWidget(QWidget):
             self.queryDropDown1.addItem("Query"+str(i))
         self.queryDropDown1.currentIndexChanged.connect(self.updateLineEdit)
         
-        generateButton1 = QPushButton()
-        generateButton1.setText("generate")
-        generateButton1.clicked.connect(self.generateOldOrder)
+        self.generateButton1 = QPushButton()
+        self.generateButton1.setText("generate")
+        self.generateButton1.clicked.connect(self.generateOldOrder)
         
         explainText1 = SquareLineEdit()
         explainText1.setReadOnly(True)
@@ -73,14 +73,15 @@ class MyWidget(QWidget):
         self.queryText2.setStyleSheet("color: rgb(255,0,0)")        
         
         self.queryDropDown2 = QComboBox()
-        self.queryDropDown2.addItem("Where customerID = XXX")
-        self.queryDropDown2.addItem("Where customerName = XXX")
-        self.queryDropDown2.addItem("Select * from orders")
+        # self.queryDropDown2.addItem("Where customerID = XXX")
+        # self.queryDropDown2.addItem("Where customerName = XXX")
+        # self.queryDropDown2.addItem("Select * from orders")
         self.queryDropDown2.currentIndexChanged.connect(self.getQuery2)
         
-        generateButton2 = QPushButton()
-        generateButton2.setText("generate")
-        generateButton2.clicked.connect(self.generateNewOrder)
+        self.generateButton2 = QPushButton()
+        self.generateButton2.setText("generate")
+        self.generateButton2.setEnabled(False)
+        self.generateButton2.clicked.connect(self.generateNewOrder)
         
         # explainText2 = SquareLineEdit()
         # explainText2.setReadOnly(True)
@@ -114,14 +115,14 @@ class MyWidget(QWidget):
 
         mainLayout.addWidget(self.queryText1, 0, 0)
         mainLayout.addWidget(self.queryDropDown1, 1, 0)
-        mainLayout.addWidget(generateButton1, 2, 0)
+        mainLayout.addWidget(self.generateButton1, 2, 0)
         # mainLayout.addWidget(explainText1, 3, 0)
         #mainLayout.addWidget(self.graphVizImage1, 3, 0)
         mainLayout.addWidget(self.scrollArea1, 3, 0)
 
         mainLayout.addWidget(self.queryText2, 0, 1)
         mainLayout.addWidget(self.queryDropDown2, 1, 1)
-        mainLayout.addWidget(generateButton2, 2, 1)
+        mainLayout.addWidget(self.generateButton2, 2, 1)
         # mainLayout.addWidget(explainText2, 3, 1)
         #mainLayout.addWidget(self.graphVizImage2, 3, 1)
         mainLayout.addWidget(self.scrollArea2, 3, 1)
@@ -147,6 +148,7 @@ class MyWidget(QWidget):
         
     def updateLineEdit(self):
         index = self.queryDropDown1.currentIndex()
+        self.generateButton2.setEnabled(False)
         if index == 0:
             self.queryText1.setText("")
             self.queryDropDown2.clear()
@@ -242,6 +244,7 @@ class MyWidget(QWidget):
         self.result1 = self.queryDB(query)
         #print(self.result1)
         self.leftadj, self.leftlist = self.treeDisplay(self.result1["Plan"],1)
+        self.generateButton2.setEnabled(True)
         
     #query postgres DB for join order
     def queryDB(self,query):
