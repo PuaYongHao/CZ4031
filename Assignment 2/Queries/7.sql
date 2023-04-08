@@ -1,16 +1,28 @@
 select
-	sum(l_extendedprice) / 7.0 as avg_yearly
+		l_shipmode,
+		sum(case
+				when o_orderpriority ='1-URGENT'
+					or o_orderpriority ='2-HIGH'
+				then 1
+				else 0
+		end) as high_line_count,
+		sum(case
+				when o_orderpriority <> '1-URGENT'
+					and o_orderpriority <> '2-HIGH'
+				then 1
+				else 0
+		end) as low_line_count
 from
-	lineitem,
-	part
+		orders,
+		lineitem
 where
-	p_partkey = l_partkey
-	and p_brand = 'Brand#13'
-	and l_quantity < (
-		select
-			0.2 * avg(l_quantity)
-		from
-			lineitem
-		where
-			l_partkey = p_partkey
-	);
+		o_orderkey = l_orderkey
+		and l_shipmode in ('MAIL', 'SHIP')
+		and l_commitdate < l_receiptdate
+		and l_shipdate < l_commitdate
+		and l_receiptdate >= date '1994-01-01'
+		and l_receiptdate < date '1994-01-01' + interval '1' year
+group by
+		l_shipmode
+order by
+		l_shipmode;

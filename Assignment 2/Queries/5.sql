@@ -1,30 +1,22 @@
 select
-	p_brand,
-	p_type,
-	p_size,
-	count(distinct ps_suppkey) as supplier_cnt
+    l_orderkey,
+    sum(l_extendedprice*(1-l_discount)) as revenue,
+    o_orderdate,
+    o_shippriority
 from
-	partsupp,
-	part
+    customer,
+    orders,
+    lineitem
 where
-	p_partkey = ps_partkey
-	and p_brand <> 'Brand#13'
-	and p_type not like 'SMALL%'
-	and p_size in (1, 2, 3, 4, 5, 6, 7, 8)
-	and ps_suppkey not in (
-		select
-			s_suppkey
-		from
-			supplier
-		where
-			s_comment like '%Customer%Complaints%'
-	)
+    c_mktsegment = 'BUILDING'
+    and c_custkey = o_custkey
+    and l_orderkey = o_orderkey
+    and o_orderdate < date '1995-03-15'
+    and l_shipdate > date '1995-03-15'
 group by
-	p_brand,
-	p_type,
-	p_size
+    l_orderkey,
+    o_orderdate,
+    o_shippriority
 order by
-	supplier_cnt desc,
-	p_brand,
-	p_type,
-	p_size;
+    revenue desc,
+    o_orderdate;

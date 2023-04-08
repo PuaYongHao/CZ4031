@@ -1,16 +1,21 @@
 select
-	sum(l_extendedprice) / 7.0 as avg_yearly
+	o_orderpriority,
+	count(*) as order_count
 from
-	lineitem,
-	part
+	orders
 where
-	p_partkey = l_partkey
-	and p_brand = 'Brand#13'
-	and l_quantity < (
+	o_orderdate >= date '1993-05-13'
+	and o_orderdate < date '1993-05-13' + interval '3' month
+	and exists (
 		select
-			0.2 * avg(l_quantity)
+				*
 		from
-			lineitem
+				lineitem
 		where
-			l_partkey = p_partkey
-	);
+				l_orderkey = o_orderkey
+				and l_commitdate < l_receiptdate
+)
+		group by
+			o_orderpriority
+		order by
+			o_orderpriority;

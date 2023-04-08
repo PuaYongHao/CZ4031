@@ -1,21 +1,28 @@
 select
-	l_returnflag,
-	l_linestatus,
-	sum(l_quantity) as sum_qty,
-	sum(l_extendedprice) as sum_base_price,
-	sum(l_extendedprice * (1 - l_discount)) as sum_disc_price,
-	sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge,
-	avg(l_quantity) as avg_qty,
-	avg(l_extendedprice) as avg_price,
-	avg(l_discount) as avg_disc,
-	count(*) as count_order
+		l_shipmode,
+		sum(case
+				when o_orderpriority ='1-URGENT'
+					or o_orderpriority ='2-HIGH'
+				then 1
+				else 0
+		end) as high_line_count,
+		sum(case
+				when o_orderpriority <> '1-URGENT'
+					and o_orderpriority <> '2-HIGH'
+				then 1
+				else 0
+		end) as low_line_count
 from
-	lineitem
+		orders,
+		lineitem
 where
-	l_shipdate <= date '1998-12-01'
+		o_orderkey = l_orderkey
+		and l_shipmode in ('FOB', 'TRUCK')
+		and l_commitdate = l_receiptdate
+		and l_shipdate < l_commitdate
+		and l_receiptdate >= date '1995-03-05'
+		and l_receiptdate < date '1995-03-05' + interval '2' month
 group by
-	l_returnflag,
-	l_linestatus
+		l_shipmode
 order by
-	l_returnflag,
-	l_linestatus;
+		l_shipmode;
