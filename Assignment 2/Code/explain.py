@@ -76,15 +76,20 @@ def findDifferencesBetweenRelations(outputLeft,outputRight,relation):
     #print("hehe ",rightOutput)
 
     #generate message of what LHS have but RHS dont have
+    #e.g. customer-Seq Scan
     leftMessage = []
     for i in range(0,len(leftOutput)):
         for j in range(0,len(rightOutput)):
             if leftOutput[i][0] == rightOutput[j][0]:
                 #found the 2 list to compare
+                tempList = []
                 for eachNode in leftOutput[i]:
                     if eachNode not in rightOutput[j]:
-                        leftMessage.append(leftOutput[i][0]+"-"+eachNode)
+                        tempList.append(leftOutput[i][0]+"-"+eachNode)
+                        #leftMessage.append(leftOutput[i][0]+"-"+eachNode)
                         #print(leftOutput[i][0]," ",eachNode," don't have")
+                if len(tempList) !=0:
+                    leftMessage.append(tempList)
     #print("gap")
     #generate message of what RHS have but LHS dont have
     rightMessage = []
@@ -92,11 +97,16 @@ def findDifferencesBetweenRelations(outputLeft,outputRight,relation):
         for j in range(0,len(leftOutput)):
             if rightOutput[i][0] == leftOutput[j][0]:
                 #found the 2 list to compare
+                tempList = []
                 for eachNode in rightOutput[i]:
                     if eachNode not in leftOutput[j]:
-                        rightMessage.append(rightOutput[i][0]+"-"+eachNode)
+                        tempList.append(leftOutput[i][0]+"-"+eachNode)
+                        #rightMessage.append(rightOutput[i][0]+"-"+eachNode)
                         #print(rightOutput[i][0]," ",eachNode," don't have")
-
+                if len(tempList) !=0:
+                    rightMessage.append(tempList)
+    #leftMessage = [["customer-Seq Scan","customer-hash"]] #testing debug
+    #rightMessage = [["customer-Index Scan","customer-hash Scan"]] #testing debug
     #print(leftMessage)
     #print(rightMessage)
     finalMessage = []
@@ -105,9 +115,20 @@ def findDifferencesBetweenRelations(outputLeft,outputRight,relation):
     else:
         for i in range(0,len(leftMessage)):
             for j in range(0,len(rightMessage)):
-                if leftMessage[i].split("-")[0] == rightMessage[j].split("-")[0]:
-                    finalMessage.append("Old query "+leftMessage[i].split("-")[1]+" from "+leftMessage[i].split("-")[0]+" table have been changed to "+rightMessage[j].split("-")[1])
-    
+                if leftMessage[i][0].split("-")[0] == rightMessage[j][0].split("-")[0]:
+                    leftDiff = ""
+                    rightDiff = ""
+                    table = leftMessage[i][0].split("-")[0]
+                    for values in leftMessage[i]:
+                        leftDiff += values.split("-")[1] +", "
+                    for values in rightMessage[j]:
+                        rightDiff += values.split("-")[1]+", "
+                    leftDiff = leftDiff[:-2]
+                    rightDiff = rightDiff[:-2]
+                    #print(leftDiff)
+                    #print(rightDiff)
+                    finalMessage.append("Old query "+leftDiff+" from "+table+" table have been changed to "+rightDiff)
+        
 
     return finalMessage
 
@@ -217,6 +238,35 @@ def findOrderOfJoin(outputLeft,outputRight,relation):
     # print(finalJoinOperator)
     return leftJoinOrder,rightJoinOrder, finalJoinOperator
 
+def findJoinChanges(joinOrderLeft,joinOrderRight,joinOperator):
+    leftJoinMessage = []
+    rightJoinMessage = []
+    joinChangesMessage = []
+    if len(joinOrderLeft) ==0:
+        leftJoinMessage.append("Old query has no join operations")
+    elif len(joinOrderLeft) == 2:
+        result = "Old query has only a join between ("+joinOrderLeft[0].split("#")[0]+" and "+joinOrderLeft[1].split("#")[0]+")"
+        leftJoinMessage.append(result)
+    else:
+        firstJoin = "("+joinOrderLeft[0].split("#")[0]+" and "+joinOrderLeft[1].split("#")[0]+")"
+        secondJoin = "("+joinOrderLeft[2].split("#")[0]+")"
+        result = "Old query has a join of "+firstJoin+" first, then the result is joined with "+secondJoin
+        leftJoinMessage.append(result)
+
+    if len(joinOrderRight) ==0:
+        rightJoinMessage.append("New query has no join operations")
+    elif len(joinOrderRight) == 2:
+        result = "New query has only a join between ("+joinOrderRight[0].split("#")[0]+" and "+joinOrderRight[1].split("#")[0]+")"
+        rightJoinMessage.append(result)
+    else:
+        firstJoin = "("+joinOrderRight[0].split("#")[0]+" and "+joinOrderRight[1].split("#")[0]+")"
+        secondJoin = "("+joinOrderRight[2].split("#")[0]+")"
+        result = "New query has a join of "+firstJoin+" first, then the result is joined with "+secondJoin
+        rightJoinMessage.append(result)
+
+    #print(leftJoinMessage)
+    return leftJoinMessage, rightJoinMessage, joinChangesMessage
+
 
 # "main" function of the explain class that calls the other sub function of the class
 def generateDifference(leftA,leftL,rightA,rightL):
@@ -249,12 +299,18 @@ def generateDifference(leftA,leftL,rightA,rightL):
     # print(outputRight)
 
     joinOrderLeft, joinOrderRight, joinOperator = findOrderOfJoin(outputLeft,outputRight,relation)
-    scanMessage = findDifferencesBetweenRelations(outputLeft,outputRight,relation)
+    scanChangesMessage = findDifferencesBetweenRelations(outputLeft,outputRight,relation)
+    leftOrderOfJoinMessage, rightOrderOfJoinMessage, joinChangesMessage = findJoinChanges(joinOrderLeft,joinOrderRight,joinOperator)
 
     print("left side relation join order: ",joinOrderLeft)
     print("right side relation join order: ",joinOrderRight)
-    print("join order from both sides: ",joinOperator,"<-- this is not done yet pls compare and output differences")
-    print("result from table scanning: ",scanMessage)
+    print("join order from both sides: ",joinOperator)
+    print("result from table scanning: ",scanChangesMessage)
+    print("old query join order: ",leftOrderOfJoinMessage)
+    print("new query join order: ",rightOrderOfJoinMessage)
+    print("old and new query join differences: in progress")
+    #print("old and new query join differences:",joinChangesMessage)
     
+    # compare the differences in joinOperator
 
     return outputLeft, outputRight
