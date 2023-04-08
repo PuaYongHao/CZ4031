@@ -1,13 +1,11 @@
-select
-	100.00 * sum(case
-		when p_type like 'PROMO%'
-			then l_extendedprice * (1 - l_discount)
-		else 0
-	end) / sum(l_extendedprice * (1 - l_discount)) as promo_revenue
+select 
+	r_name,
+	n_name,
+	c_mktsegment
 from
-	lineitem,
-	part
+	customer,
+	nation,
+	region
 where
-	l_partkey = p_partkey
-	and l_shipdate >= '1996-03-13'
-	and l_shipdate < '1996-04-13'
+	n_nationkey = c_nationkey
+	and r_regionkey = n_regionkey
