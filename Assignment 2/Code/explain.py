@@ -238,10 +238,17 @@ def findOrderOfJoin(outputLeft,outputRight,relation):
     # print(finalJoinOperator)
     return leftJoinOrder,rightJoinOrder, finalJoinOperator
 
+#function to generate natural language on which tables are joined together first and the difference in join types
 def findJoinChanges(joinOrderLeft,joinOrderRight,joinOperator):
     leftJoinMessage = []
     rightJoinMessage = []
     joinChangesMessage = []
+    #e.g. e.g. list = ['customer#10', 'nation#12', 'orders#7']
+    #first 2 indexes are joined first then the result is joined with the last index
+    #if list is empty means no join
+    #if list only has 2 table means only 1 join
+
+    #generate join order of the old/left query
     if len(joinOrderLeft) ==0:
         leftJoinMessage.append("Old query has no join operations")
     elif len(joinOrderLeft) == 2:
@@ -253,6 +260,7 @@ def findJoinChanges(joinOrderLeft,joinOrderRight,joinOperator):
         result = "Old query has a join of "+firstJoin+" first, then the result is joined with "+secondJoin
         leftJoinMessage.append(result)
 
+    #generate join order of the new/right query
     if len(joinOrderRight) ==0:
         rightJoinMessage.append("New query has no join operations")
     elif len(joinOrderRight) == 2:
@@ -264,7 +272,69 @@ def findJoinChanges(joinOrderLeft,joinOrderRight,joinOperator):
         result = "New query has a join of "+firstJoin+" first, then the result is joined with "+secondJoin
         rightJoinMessage.append(result)
 
-    #print(leftJoinMessage)
+    #generate the difference of joins
+    #e.g. [['Hash Join#2', 'Hash Join#1'], ['Hash Join#6', 'Hash Join#5']] there will only be 2 lists:
+    # 1st list = old query joins
+    # 2nd list = new quest joins
+    # the join orders are from bottom to top
+    #joinOperator = [['Nested Loop Join#2', 'Nested Loop Join#1'], ['Hash Join#6', 'Hash Join#5']] #FOR DEBUG
+    leftJoin = joinOperator[0]
+    rightJoin = joinOperator[1]
+    noChangeText = "Both the old query and new query join types have no changes"
+
+
+    if len(leftJoin)==0 and len(rightJoin)==0:
+        joinChangesMessage.append("Both old and new query has no join operations")
+    elif len(leftJoin)==1 and len(rightJoin)==0:
+        joinName = leftJoin[0].split("#")[0]
+        result = "Old query's "+ joinName+" has been removed so new query has no join"
+        joinChangesMessage.append(result)
+    elif len(leftJoin)==0 and len(rightJoin)==1:
+        joinName = rightJoin[0].split("#")[0]
+        result = "Old query initially do not have a join but the new query has added a "+joinName+" join"
+        joinChangesMessage.append(result)
+    elif len(leftJoin)==1 and len(rightJoin)==1:
+        leftJoinName = leftJoin[0].split("#")[0]
+        rightJoinName = rightJoin[0].split("#")[0]
+        if leftJoinName != rightJoinName:
+            result = "Old query "+leftJoinName+" has been changed to "+rightJoinName
+            joinChangesMessage.append(result)
+        else:
+            joinChangesMessage.append(noChangeText)
+    elif len(leftJoin)==2 and len(rightJoin)==1:
+        leftJoinName = leftJoin[0].split("#")[0] + " and "+leftJoin[1].split("#")[0]
+        rightJoinName = rightJoin[0].split("#")[0]
+        result = "Old query's "+leftJoinName +" has been changed to only "+rightJoinName
+        joinChangesMessage.append(result)
+    elif len(leftJoin)==1 and len(rightJoin)==2:
+        leftJoinName = leftJoin[0].split("#")[0]
+        rightJoinName = rightJoin[0].split("#")[0] + " and "+rightJoin[1].split("#")[0]
+        result = "Old query's only "+leftJoinName +" has been changed to "+rightJoinName
+        joinChangesMessage.append(result)
+    else:
+        if leftJoin[0].split("#")[0] == rightJoin[0].split("#")[0] and leftJoin[1].split("#")[0] == rightJoin[1].split("#")[0]:
+            joinChangesMessage.append(noChangeText)
+        else:
+            #1st level different, 2nd level same
+            if leftJoin[0].split("#")[0] != rightJoin[0].split("#")[0] and leftJoin[1].split("#")[0] == rightJoin[1].split("#")[0]:
+                leftJoinName = leftJoin[0].split("#")[0]
+                rightJoinName = rightJoin[0].split("#")[0]
+                result = "Old query first level "+leftJoinName+" has been changed to "+rightJoinName+" in the new query"
+                joinChangesMessage.append(result)
+            #1st level same, 2nd level different
+            elif leftJoin[0].split("#")[0] == rightJoin[0].split("#")[0] and leftJoin[1].split("#")[0] != rightJoin[1].split("#")[0]:
+                leftJoinName = leftJoin[1].split("#")[0]
+                rightJoinName = rightJoin[1].split("#")[0]
+                result = "Old query second level "+leftJoinName+" has been changed to "+rightJoinName+" in the new query"
+                joinChangesMessage.append(result)
+            #1st level different, 2nd level different
+            else:
+                leftJoinName = leftJoin[0].split("#")[0] + " and "+leftJoin[1].split("#")[0]
+                rightJoinName = rightJoin[0].split("#")[0] + " and "+rightJoin[1].split("#")[0]
+                result = "Old query both joins ("+leftJoinName+") has been changed to ("+rightJoinName+") in the new query"
+                joinChangesMessage.append(result)
+        
+
     return leftJoinMessage, rightJoinMessage, joinChangesMessage
 
 
@@ -308,8 +378,7 @@ def generateDifference(leftA,leftL,rightA,rightL):
     print("result from table scanning: ",scanChangesMessage)
     print("old query join order: ",leftOrderOfJoinMessage)
     print("new query join order: ",rightOrderOfJoinMessage)
-    print("old and new query join differences: in progress")
-    #print("old and new query join differences:",joinChangesMessage)
+    print("old and new query join differences:",joinChangesMessage)
     
     # compare the differences in joinOperator
 
