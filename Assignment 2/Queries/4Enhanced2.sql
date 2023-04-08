@@ -15,6 +15,6 @@ from
 	) as revenue
 where
 	s_suppkey = l_suppkey
+	and total = 26612564.9091
 order by
-	total
-LIMIT 1
+	s_suppkey;

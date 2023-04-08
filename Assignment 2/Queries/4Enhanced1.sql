@@ -15,6 +15,6 @@ from
 	) as revenue
 where
 	s_suppkey = l_suppkey
+	and s_suppkey = 2000
 order by
-	total desc
-LIMIT 1
+	s_suppkey;

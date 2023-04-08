@@ -380,9 +380,6 @@ def findCostAndSize(costL, costR, rowL, rowR, joinOperator):
     join_index_L = [join.split('#')[1] for join in joinOperator[0]]
     join_index_R = [join.split('#')[1] for join in joinOperator[1]]
 
-    print(cost_dict_L)
-    print(cost_dict_R)
-
     for i in range(len(join_type_L)):
         if i >= len(join_type_R):
             # handle when join_type_R is shorter than join_type_L

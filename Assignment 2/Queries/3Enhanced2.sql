@@ -1,8 +1,7 @@
 select 
 	r_name,
 	n_name,
-	c_mktsegment,
-	AVG(c_acctbal)
+	c_mktsegment
 from
 	customer,
 	nation,
@@ -10,10 +9,4 @@ from
 where
 	n_nationkey = c_nationkey
 	and r_regionkey = n_regionkey
-group by
-	r_name,
-	n_name,
-	c_mktsegment
-order by
-	r_name,
-	n_name
+	and r_regionkey = 2
