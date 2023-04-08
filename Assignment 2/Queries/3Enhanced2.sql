@@ -1,21 +1,19 @@
-select
-	l_returnflag,
-	l_linestatus,
-	sum(l_quantity) as sum_qty,
-	sum(l_extendedprice) as sum_base_price,
-	sum(l_extendedprice * (1 - l_discount)) as sum_disc_price,
-	sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge,
-	avg(l_quantity) as avg_qty,
-	avg(l_extendedprice) as avg_price,
-	avg(l_discount) as avg_disc,
-	count(*) as count_order
+select 
+	r_name,
+	n_name,
+	c_mktsegment,
+	AVG(c_acctbal)
 from
-	lineitem
+	customer,
+	nation,
+	region
 where
-	l_shipdate <= date '1998-12-01'
+	n_nationkey = c_nationkey
+	and r_regionkey = n_regionkey
 group by
-	l_returnflag,
-	l_linestatus
+	r_name,
+	n_name,
+	c_mktsegment
 order by
-	l_returnflag,
-	l_linestatus;
+	r_name,
+	n_name
