@@ -268,10 +268,6 @@ class MyWidget(QWidget):
             self.result2["Plan"], 2)
         outputL, outputR = generateDifference(self.leftadj, self.leftlist, self.rightadj,
                                               self.rightlist, self.costListL, self.costListR, self.rowListL, self.rowListR)
-        print(self.costListL)
-        print(self.costListR)
-        print(self.rowListL)
-        print(self.rowListR)
 
     # print the image of the join order
     def treeDisplay(self, plan, index):
