@@ -374,6 +374,7 @@ def findJoinChanges(joinOrderLeft, joinOrderRight, joinOperator):
 
 
 def findCostAndSize(costL, costR, rowL, rowR, joinOperator):
+    result = ""
     # split the cost strings and store them in dictionaries
     cost_dict_L = {int(cost.split('#')[1]): float(
         cost.split('#')[0]) for cost in costL}
@@ -401,9 +402,12 @@ def findCostAndSize(costL, costR, rowL, rowR, joinOperator):
             cost_R = cost_dict_R.get(int(join_index_R[i]))
             row_L = row_dict_L.get(int(join_index_L[i]))
             row_R = row_dict_R.get(int(join_index_R[i]))
-            print(
-                f"The total estimated cost and number of rows involved in {join_type_L[i]}#{join_index_L[i]} changed from {cost_L} and {row_L} to {cost_R} and {row_R} respectively after switching to {join_type_R[i]}#{join_index_R[i]}")
-    return
+            if(len(result) != 0):
+                result += "\n"
+            result += f"The total estimated cost and number of rows involved in {join_type_L[i]}#{join_index_L[i]} changed from {cost_L} and {row_L} to {cost_R} and {row_R} respectively after switching to {join_type_R[i]}#{join_index_R[i]}"
+            #print(
+            #    f"The total estimated cost and number of rows involved in {join_type_L[i]}#{join_index_L[i]} changed from {cost_L} and {row_L} to {cost_R} and {row_R} respectively after switching to {join_type_R[i]}#{join_index_R[i]}")
+    return result
 
 # "main" function of the explain class that calls the other sub function of the class
 
@@ -452,9 +456,14 @@ def generateDifference(leftA, leftL, rightA, rightL, costL, costR, rowL, rowR):
     print("old query join order: ", leftOrderOfJoinMessage)
     print("new query join order: ", rightOrderOfJoinMessage)
     print("old and new query join differences:", joinChangesMessage)
+
+    #Return Message
+    leftOrderOfJoinMessage = " ".join(leftOrderOfJoinMessage)
+    rightOrderOfJoinMessage = " ".join(rightOrderOfJoinMessage)
+    joinChangesMessage = " ".join(joinChangesMessage)
+    resultMessage = leftOrderOfJoinMessage+"\n"+ rightOrderOfJoinMessage+"\n"+ joinChangesMessage
     if joinChangesMessage != 'Both the old query and new query join types have no changes':
-        findCostAndSize(costL, costR, rowL, rowR, joinOperator)
-
+        resultMessage += "\n" + findCostAndSize(costL, costR, rowL, rowR, joinOperator)
     # compare the differences in joinOperator
-
-    return outputLeft, outputRight
+    #print(resultMessage)
+    return outputLeft, outputRight,resultMessage

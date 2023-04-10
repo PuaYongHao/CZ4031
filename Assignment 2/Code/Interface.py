@@ -49,8 +49,14 @@ class MyWidget(QWidget):
         self.generateButton1.setText("generate")
         self.generateButton1.clicked.connect(self.generateOldOrder)
 
-        explainText1 = SquareLineEdit()
-        explainText1.setReadOnly(True)
+
+        self.explainText1 = SquareLineEdit()
+        self.explainText1.setReadOnly(True)
+        self.scrollExplainArea = QScrollArea()
+        self.scrollExplainArea.setWidgetResizable(True)
+        self.scrollExplainArea.setMinimumHeight(300)
+        self.scrollExplainArea.setMinimumWidth(300)
+        self.scrollExplainArea.setWidget(self.explainText1)
         # explainText1.setDisabled(True)
 
         # graphVizImage = QPixmap('sid.jpg')
@@ -133,7 +139,7 @@ class MyWidget(QWidget):
         # mainLayout.addWidget(self.graphVizImage2, 3, 1)
         mainLayout.addWidget(self.scrollArea2, 3, 1)
 
-        mainLayout.addWidget(explainText1, 4, 0, 1, 2)
+        mainLayout.addWidget(self.scrollExplainArea, 4, 0, 1, 2)
 
         mainLayout.setRowStretch(0, 0)
         mainLayout.setRowStretch(1, 0)
@@ -266,8 +272,9 @@ class MyWidget(QWidget):
         # print(self.result2["Plan"])
         self.rightadj, self.rightlist, self.costListR, self.rowListR = self.treeDisplay(
             self.result2["Plan"], 2)
-        outputL, outputR = generateDifference(self.leftadj, self.leftlist, self.rightadj,
-                                              self.rightlist, self.costListL, self.costListR, self.rowListL, self.rowListR)
+        outputL, outputR,resultMessage = generateDifference(self.leftadj, self.leftlist, self.rightadj,
+                                                            self.rightlist, self.costListL, self.costListR, self.rowListL, self.rowListR)
+        self.explainText1.setText(resultMessage)
 
     # print the image of the join order
     def treeDisplay(self, plan, index):
