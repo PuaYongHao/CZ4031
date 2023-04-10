@@ -28,6 +28,7 @@ class MyWidget(QWidget):
         self.nodeCount = 1
         # self.setFixedWidth(1000)
 
+        self.startCostList = list()
         self.costList = list()
         self.rowList = list()
 
@@ -48,7 +49,6 @@ class MyWidget(QWidget):
         self.generateButton1 = QPushButton()
         self.generateButton1.setText("generate")
         self.generateButton1.clicked.connect(self.generateOldOrder)
-
 
         self.explainText1 = SquareLineEdit()
         self.explainText1.setReadOnly(True)
@@ -254,7 +254,7 @@ class MyWidget(QWidget):
     def generateOldOrder(self):
         query = self.queryText1.toPlainText()
         self.result1 = self.queryDB(query)
-        self.leftadj, self.leftlist, self.costListL, self.rowListL = self.treeDisplay(
+        self.leftadj, self.leftlist, self.costListL, self.rowListL, self.startCostListL = self.treeDisplay(
             self.result1["Plan"], 1)
         self.generateButton2.setEnabled(True)
 
@@ -269,11 +269,11 @@ class MyWidget(QWidget):
     def generateNewOrder(self):
         query = self.queryText2.toPlainText()
         self.result2 = self.queryDB(query)
-        # print(self.result2["Plan"])
-        self.rightadj, self.rightlist, self.costListR, self.rowListR = self.treeDisplay(
+        print(self.result2["Plan"])
+        self.rightadj, self.rightlist, self.costListR, self.rowListR, self.startCostListR = self.treeDisplay(
             self.result2["Plan"], 2)
-        outputL, outputR,resultMessage = generateDifference(self.leftadj, self.leftlist, self.rightadj,
-                                                            self.rightlist, self.costListL, self.costListR, self.rowListL, self.rowListR)
+        outputL, outputR, resultMessage = generateDifference(self.leftadj, self.leftlist, self.rightadj,
+                                                             self.rightlist, self.costListL, self.costListR, self.rowListL, self.rowListR, self.startCostListL, self.startCostListR)
         self.explainText1.setText(resultMessage)
 
     # print the image of the join order
@@ -294,9 +294,11 @@ class MyWidget(QWidget):
             # print("Node List: ",nodeList)
             costList = self.costList
             rowList = self.rowList
+            startCostList = self.startCostList
 
             self.nodeCount = 1
             self.nodeList = list()
+            self.startCostList = list()
             self.costList = list()
             self.rowList = list()
 
@@ -330,7 +332,7 @@ class MyWidget(QWidget):
                 self.graphVizImage2.setAlignment(
                     Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
 
-            return adjList, nodeList, costList, rowList
+            return adjList, nodeList, costList, rowList, startCostList
 
     def getAdjList(self, queryPlan, result):
         """
@@ -352,6 +354,8 @@ class MyWidget(QWidget):
                     f"{queryPlan['Node Type']}#{self.nodeCount}")
             self.nodeList.append(
                 f"{queryPlan['Relation Name']}#{self.nodeCount}")
+            self.startCostList.append(
+                f"{queryPlan['Startup Cost']}#{self.nodeCount}")
             self.costList.append(
                 f"{queryPlan['Total Cost']}#{self.nodeCount}")
             self.rowList.append(
@@ -377,6 +381,9 @@ class MyWidget(QWidget):
             # print("parent: ", queryPlan['Node Type'], " and ", self.nodeCount)
             if planNodeType not in self.nodeList:
                 self.nodeList.append(planNodeType)
+
+            self.startCostList.append(
+                f"{queryPlan['Startup Cost']}#{self.nodeCount}")
 
             self.costList.append(f"{queryPlan['Total Cost']}#{self.nodeCount}")
 
