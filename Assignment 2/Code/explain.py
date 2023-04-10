@@ -70,8 +70,8 @@ def findDifferencesBetweenRelations(outputLeft, outputRight, relation):
         stop = 0
         tempListL = []
         for node in range(0, len(outputLeft[oldList])):
-            if isNotUsefulNode(outputLeft[oldList][node]):
-                break
+            #if isNotUsefulNode(outputLeft[oldList][node]):
+                #break
             if isJoin(outputLeft[oldList][node]):
                 leftOutput.append(tempListL)
                 break
@@ -82,8 +82,8 @@ def findDifferencesBetweenRelations(outputLeft, outputRight, relation):
         stop = 0
         tempListL = []
         for node in range(0, len(outputRight[newList])):
-            if isNotUsefulNode(outputRight[newList][node]):
-                break
+            #if isNotUsefulNode(outputRight[newList][node]):
+             #   break
             if isJoin(outputRight[newList][node]):
                 rightOutput.append(tempListL)
                 break
@@ -93,42 +93,125 @@ def findDifferencesBetweenRelations(outputLeft, outputRight, relation):
 
     # generate message of what LHS have but RHS dont have
     # e.g. customer-Seq Scan
+    #leftOutput = [['customer', 'Seqq Scan'], ['nation', 'Seq Scan', 'Hash']] #FOR DEBUG
+    #rightOutput = [['customer', 'Seqq Scan'], ['nation', 'Seqq Scan', 'Hash'], ['part', 'Seq Scan','supa hashsu']] #FOR DEBUG
     leftMessage = []
     for i in range(0, len(leftOutput)):
+        found = 0
         for j in range(0, len(rightOutput)):
             if leftOutput[i][0] == rightOutput[j][0]:
+                found = 1
                 # found the 2 list to compare
                 tempList = []
                 for eachNode in leftOutput[i]:
-                    if i < len(leftOutput) or eachNode not in rightOutput[j]:
+                    #if i < len(leftOutput) or eachNode not in rightOutput[j]:
+                    if (eachNode not in relation) and (eachNode not in rightOutput[j]):
                         tempList.append(leftOutput[i][0]+"-"+eachNode)
                         # leftMessage.append(leftOutput[i][0]+"-"+eachNode)
                         # print(leftOutput[i][0]," ",eachNode," don't have")
                 if len(tempList) != 0:
                     leftMessage.append(tempList)
+        if found == 0:
+            tempList = []
+            for values in leftOutput[i]:
+                if values not in relation:
+                    tempList.append(leftOutput[i][0]+"-"+values)
+            leftMessage.append(tempList)
     # print("gap")
     # generate message of what RHS have but LHS dont have
     rightMessage = []
     for i in range(0, len(rightOutput)):
+        found = 0
         for j in range(0, len(leftOutput)):
             if rightOutput[i][0] == leftOutput[j][0]:
+                found = 1
                 # found the 2 list to compare
                 tempList = []
                 for eachNode in rightOutput[i]:
-                    if i < len(leftOutput) or eachNode not in leftOutput[j]:
-                        tempList.append(leftOutput[i][0]+"-"+eachNode)
+                    #print(eachNode," and ",leftOutput[j])
+                    #if i < len(leftOutput) or eachNode not in leftOutput[j]:
+                    #print("hi ",eachNode)
+                    if (eachNode not in relation) and (eachNode not in leftOutput[j]):
+                        tempList.append(rightOutput[i][0]+"-"+eachNode)
                         # rightMessage.append(rightOutput[i][0]+"-"+eachNode)
                         # print(rightOutput[i][0]," ",eachNode," don't have")
                 if len(tempList) != 0:
                     rightMessage.append(tempList)
+        if found == 0:
+            tempList = []
+            for values in rightOutput[i]:
+                if values not in relation:
+                    tempList.append(rightOutput[i][0]+"-"+values)
+            rightMessage.append(tempList)
     # leftMessage = [["customer-Seq Scan","customer-hash"]] #testing debug
     # rightMessage = [["customer-Index Scan","customer-hash Scan"]] #testing debug
-    # print(leftMessage)
-    # print(rightMessage)
+    #print("1 ",leftMessage)
+    #print("2 ",rightMessage)
     finalMessage = []
     if len(leftMessage) == 0 and len(rightMessage) == 0:
         finalMessage.append(
             "Both queries scanning method of tables are the same")
+    elif len(leftMessage) != len(rightMessage):
+        if(len(leftMessage) > len(rightMessage)):
+            #left message have a new relation that right side dont have
+            for i in range(0,len(leftMessage)):
+                exist = 0
+                for j in range(0,len(rightMessage)):
+                    if leftMessage[i][0].split("-")[0] == rightMessage[j][0].split("-")[0]:
+                        exist = 1
+                        leftDiff = ""
+                        rightDiff = ""
+                        table = leftMessage[i][0].split("-")[0]
+                        for values in leftMessage[i]:
+                            leftDiff += values.split("-")[1] + ", "
+                        for values in rightMessage[j]:
+                            rightDiff += values.split("-")[1]+", "
+                        leftDiff = leftDiff[:-2]
+                        rightDiff = rightDiff[:-2]
+                        # print(leftDiff)
+                        # print(rightDiff)
+                        finalMessage.append(
+                            "Old query ("+leftDiff+") from ("+table+") table have been changed to ("+rightDiff+")")
+                        
+                if exist == 0:
+                    #the table from LHS does not exist in the RHS (new relation)
+                    leftDiff = ""
+                    table = leftMessage[i][0].split("-")[0]
+                    for values in leftMessage[i]:
+                        leftDiff += values.split("-")[1] + ", "
+                    leftDiff = leftDiff[:-2]
+                    finalMessage.append("Old query table ("+table+") and it's ("+leftDiff+") have been removed in the New query")
+
+        else:
+            #right message have a new relation that left side dont have
+            for i in range(0,len(rightMessage)):
+                exist = 0
+                for j in range(0,len(leftMessage)):
+                    if rightMessage[i][0].split("-")[0] == leftMessage[j][0].split("-")[0]:
+                        exist = 1
+                        leftDiff = ""
+                        rightDiff = ""
+                        table = rightMessage[i][0].split("-")[0]
+                        for values in rightMessage[i]:
+                            rightDiff += values.split("-")[1] + ", "
+                        for values in leftMessage[j]:
+                            leftDiff += values.split("-")[1]+", "
+                        leftDiff = leftDiff[:-2]
+                        rightDiff = rightDiff[:-2]
+                        # print(leftDiff)
+                        # print(rightDiff)
+                        finalMessage.append(
+                            "Old query ("+leftDiff+") from ("+table+") table have been changed to ("+rightDiff+")")
+                        
+                if exist == 0:
+                    #the table from LHS does not exist in the RHS (new relation)
+                    rightDiff = ""
+                    table = rightMessage[i][0].split("-")[0]
+                    for values in rightMessage[i]:
+                        rightDiff += values.split("-")[1] + ", "
+                    rightDiff = rightDiff[:-2]
+                    finalMessage.append("new Query table ("+table+") and it's ("+rightDiff+") have been newly added")
+
     else:
         for i in range(0, len(leftMessage)):
             for j in range(0, len(rightMessage)):
@@ -145,7 +228,7 @@ def findDifferencesBetweenRelations(outputLeft, outputRight, relation):
                     # print(leftDiff)
                     # print(rightDiff)
                     finalMessage.append(
-                        "Old query "+leftDiff+" from "+table+" table have been changed to "+rightDiff)
+                        "Old query ("+leftDiff+") from ("+table+") table have been changed to ("+rightDiff+")")
 
     return finalMessage
 
