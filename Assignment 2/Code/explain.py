@@ -36,14 +36,16 @@ def isJoin(nodeType):
 
 # for each relation/table, generate from the relation node up to the root node
 
-#check if node is a useful for comparison node
+# check if node is a useful for comparison node
+
+
 def isNotUsefulNode(nodeType):
     useless_elements = ["Memoize"]
     if nodeType.split("#")[0] in useless_elements:
         return True
     else:
         return False
-    
+
 
 def findSequence(adjMatrix, relation, parent):
     result = [relation, parent]
@@ -88,8 +90,8 @@ def findDifferencesBetweenRelations(outputLeft, outputRight, relation):
                 rightOutput.append(tempListL)
                 break
             tempListL.append(outputRight[newList][node].split("#")[0])
-    #print("hehe ",leftOutput)
-    #print("hehe ",rightOutput)
+    # print("hehe ",leftOutput)
+    # print("hehe ",rightOutput)
 
     # generate message of what LHS have but RHS dont have
     # e.g. customer-Seq Scan
@@ -260,10 +262,30 @@ def findOrderOfJoin(outputLeft, outputRight, relation):
 # function to generate natural language on which tables are joined together first and the difference in join types
 
 
-def findJoinChanges(joinOrderLeft, joinOrderRight, joinOperator):
+def findJoinChanges(joinOrderLeft, joinOrderRight, joinOperator, costL, costR, rowL, rowR, startCostListL, startCostListR):
     leftJoinMessage = []
     rightJoinMessage = []
     joinChangesMessage = []
+    costChangesMessage = []
+
+    # split the cost strings and store them in dictionaries
+    start_cost_dict_L = {int(cost.split('#')[1]): float(
+        cost.split('#')[0]) for cost in startCostListL}
+    start_cost_dict_R = {int(cost.split('#')[1]): float(
+        cost.split('#')[0]) for cost in startCostListR}
+
+    # split the cost strings and store them in dictionaries
+    cost_dict_L = {int(cost.split('#')[1]): float(
+        cost.split('#')[0]) for cost in costL}
+    cost_dict_R = {int(cost.split('#')[1]): float(
+        cost.split('#')[0]) for cost in costR}
+
+    # split the row strings and store them in dictionaries
+    row_dict_L = {int(row.split('#')[1]): float(
+        row.split('#')[0]) for row in rowL}
+    row_dict_R = {int(row.split('#')[1]): float(
+        row.split('#')[0]) for row in rowR}
+
     # e.g. e.g. list = ['customer#10', 'nation#12', 'orders#7']
     # first 2 indexes are joined first then the result is joined with the last index
     # if list is empty means no join
@@ -320,12 +342,32 @@ def findJoinChanges(joinOrderLeft, joinOrderRight, joinOperator):
         joinName = rightJoin[0].split("#")[0]
         result = "Old query initially do not have a join but the new query has added a "+joinName+" join"
         joinChangesMessage.append(result)
+
+        total_cost_R = cost_dict_R.get(int(rightJoin[0].split("#")[1]))
+        start_cost_R = start_cost_dict_R.get(int(rightJoin[0].split("#")[1]))
+        cost_R = total_cost_R - start_cost_R
+        costResult = f"The total estimated cost for {joinName} join is {round(cost_R, 2)}"
+        costChangesMessage.append(costResult)
+
     elif len(leftJoin) == 1 and len(rightJoin) == 1:
         leftJoinName = leftJoin[0].split("#")[0]
         rightJoinName = rightJoin[0].split("#")[0]
         if leftJoinName != rightJoinName:
             result = "Old query "+leftJoinName+" has been changed to "+rightJoinName
             joinChangesMessage.append(result)
+
+            total_cost_L = cost_dict_L.get(int(leftJoin[0].split("#")[1]))
+            start_cost_L = start_cost_dict_L.get(
+                int(leftJoin[0].split("#")[1]))
+            cost_L = total_cost_L - start_cost_L
+
+            total_cost_R = cost_dict_R.get(int(rightJoin[0].split("#")[1]))
+            start_cost_R = start_cost_dict_R.get(
+                int(rightJoin[0].split("#")[1]))
+            cost_R = total_cost_R - start_cost_R
+
+            costResult = f"The total estimated cost of {leftJoinName} changed from {round(cost_L, 2)} to {round(cost_R, 2)} after switching to {rightJoinName}"
+            costChangesMessage.append(costResult)
         else:
             joinChangesMessage.append(noChangeText)
     elif len(leftJoin) == 2 and len(rightJoin) == 1:
@@ -334,6 +376,21 @@ def findJoinChanges(joinOrderLeft, joinOrderRight, joinOperator):
         rightJoinName = rightJoin[0].split("#")[0]
         result = "Old query's "+leftJoinName + " has been changed to only "+rightJoinName
         joinChangesMessage.append(result)
+
+        total_cost_L = cost_dict_L.get(int(leftJoin[0].split("#")[1]))
+        start_cost_L = start_cost_dict_L.get(int(leftJoin[0].split("#")[1]))
+
+        total_cost_L += cost_dict_L.get(int(leftJoin[1].split("#")[1]))
+        start_cost_L += start_cost_dict_L.get(int(leftJoin[1].split("#")[1]))
+        cost_L = total_cost_L - start_cost_L
+
+        total_cost_R = cost_dict_R.get(int(rightJoin[0].split("#")[1]))
+        start_cost_R = start_cost_dict_R.get(int(rightJoin[0].split("#")[1]))
+        cost_R = total_cost_R - start_cost_R
+
+        costResult = f"The total estimated cost of {leftJoinName} changed from {round(cost_L, 2)} to {round(cost_R, 2)} after switching to {rightJoinName}"
+        costChangesMessage.append(costResult)
+
     elif len(leftJoin) == 1 and len(rightJoin) == 2:
         leftJoinName = leftJoin[0].split("#")[0]
         rightJoinName = rightJoin[0].split(
@@ -341,6 +398,21 @@ def findJoinChanges(joinOrderLeft, joinOrderRight, joinOperator):
         result = "Old query's only "+leftJoinName + \
             " has been changed to "+rightJoinName
         joinChangesMessage.append(result)
+
+        total_cost_L = cost_dict_L.get(int(leftJoin[0].split("#")[1]))
+        start_cost_L = start_cost_dict_L.get(int(leftJoin[0].split("#")[1]))
+        cost_L = total_cost_L - start_cost_L
+
+        total_cost_R = cost_dict_R.get(int(rightJoin[0].split("#")[1]))
+        start_cost_R = start_cost_dict_R.get(int(rightJoin[0].split("#")[1]))
+
+        total_cost_R += cost_dict_R.get(int(rightJoin[1].split("#")[1]))
+        start_cost_R += start_cost_dict_R.get(int(rightJoin[1].split("#")[1]))
+        cost_R = total_cost_R - start_cost_R
+
+        costResult = f"The total estimated cost of {leftJoinName} changed from {round(cost_L, 2)} to {round(cost_R, 2)} after switching to {rightJoinName}"
+        costChangesMessage.append(costResult)
+
     else:
         if leftJoin[0].split("#")[0] == rightJoin[0].split("#")[0] and leftJoin[1].split("#")[0] == rightJoin[1].split("#")[0]:
             joinChangesMessage.append(noChangeText)
@@ -352,6 +424,19 @@ def findJoinChanges(joinOrderLeft, joinOrderRight, joinOperator):
                 result = "Old query first level "+leftJoinName + \
                     " has been changed to "+rightJoinName+" in the new query"
                 joinChangesMessage.append(result)
+
+                total_cost_L = cost_dict_L.get(int(leftJoin[0].split("#")[1]))
+                start_cost_L = start_cost_dict_L.get(
+                    int(leftJoin[0].split("#")[1]))
+                cost_L = total_cost_L - start_cost_L
+
+                total_cost_R = cost_dict_R.get(int(rightJoin[0].split("#")[1]))
+                start_cost_R = start_cost_dict_R.get(
+                    int(rightJoin[0].split("#")[1]))
+                cost_R = total_cost_R - start_cost_R
+
+                costResult = f"The total estimated cost of {leftJoinName} changed from {round(cost_L, 2)} to {round(cost_R, 2)} after switching to {rightJoinName}"
+                costChangesMessage.append(costResult)
             # 1st level same, 2nd level different
             elif leftJoin[0].split("#")[0] == rightJoin[0].split("#")[0] and leftJoin[1].split("#")[0] != rightJoin[1].split("#")[0]:
                 leftJoinName = leftJoin[1].split("#")[0]
@@ -359,6 +444,19 @@ def findJoinChanges(joinOrderLeft, joinOrderRight, joinOperator):
                 result = "Old query second level "+leftJoinName + \
                     " has been changed to "+rightJoinName+" in the new query"
                 joinChangesMessage.append(result)
+
+                total_cost_L = cost_dict_L.get(int(leftJoin[1].split("#")[1]))
+                start_cost_L = start_cost_dict_L.get(
+                    int(leftJoin[1].split("#")[1]))
+                cost_L = total_cost_L - start_cost_L
+
+                total_cost_R = cost_dict_R.get(int(rightJoin[1].split("#")[1]))
+                start_cost_R = start_cost_dict_R.get(
+                    int(rightJoin[1].split("#")[1]))
+                cost_R = total_cost_R - start_cost_R
+
+                costResult = f"The total estimated cost of {leftJoinName} changed from {round(cost_L, 2)} to {round(cost_R, 2)} after switching to {rightJoinName}"
+                costChangesMessage.append(costResult)
             # 1st level different, 2nd level different
             else:
                 leftJoinName = leftJoin[0].split(
@@ -370,49 +468,38 @@ def findJoinChanges(joinOrderLeft, joinOrderRight, joinOperator):
                     rightJoinName+") in the new query"
                 joinChangesMessage.append(result)
 
-    return leftJoinMessage, rightJoinMessage, joinChangesMessage
+                total_cost_L = cost_dict_L.get(int(leftJoin[0].split("#")[1]))
+                start_cost_L = start_cost_dict_L.get(
+                    int(leftJoin[0].split("#")[1]))
+
+                total_cost_L += cost_dict_L.get(int(leftJoin[1].split("#")[1]))
+                start_cost_L += start_cost_dict_L.get(
+                    int(leftJoin[1].split("#")[1]))
+                cost_L = total_cost_L - start_cost_L
+
+                total_cost_R = cost_dict_R.get(int(rightJoin[0].split("#")[1]))
+                start_cost_R = start_cost_dict_R.get(
+                    int(rightJoin[0].split("#")[1]))
+
+                total_cost_R += cost_dict_R.get(
+                    int(rightJoin[1].split("#")[1]))
+                start_cost_R += start_cost_dict_R.get(
+                    int(rightJoin[1].split("#")[1]))
+                cost_R = total_cost_R - start_cost_R
+
+                costResult = f"The total estimated cost of {leftJoinName} changed from {round(cost_L, 2)} to {round(cost_R, 2)} after switching to {rightJoinName}"
+                costChangesMessage.append(costResult)
+
+    return leftJoinMessage, rightJoinMessage, joinChangesMessage, costChangesMessage
 
 
-def findCostAndSize(costL, costR, rowL, rowR, joinOperator):
-    result = ""
-    # split the cost strings and store them in dictionaries
-    cost_dict_L = {int(cost.split('#')[1]): float(
-        cost.split('#')[0]) for cost in costL}
-    cost_dict_R = {int(cost.split('#')[1]): float(
-        cost.split('#')[0]) for cost in costR}
+#             result += f"The total estimated cost and number of rows involved in {join_type_L[i]} changed from {cost_L} and {row_L} to {cost_R} and {row_R} respectively after switching to {join_type_R[i]}"
 
-    # split the row strings and store them in dictionaries
-    row_dict_L = {int(row.split('#')[1]): float(
-        row.split('#')[0]) for row in rowL}
-    row_dict_R = {int(row.split('#')[1]): float(
-        row.split('#')[0]) for row in rowR}
-
-    # match the join operators with their corresponding costs and rows
-    join_type_L = [join.split('#')[0] for join in joinOperator[0]]
-    join_type_R = [join.split('#')[0] for join in joinOperator[1]]
-    join_index_L = [join.split('#')[1] for join in joinOperator[0]]
-    join_index_R = [join.split('#')[1] for join in joinOperator[1]]
-
-    for i in range(len(join_type_L)):
-        if i >= len(join_type_R):
-            # handle when join_type_R is shorter than join_type_L
-            break
-        if join_type_L[i] != join_type_R[i]:
-            cost_L = cost_dict_L.get(int(join_index_L[i]))
-            cost_R = cost_dict_R.get(int(join_index_R[i]))
-            row_L = row_dict_L.get(int(join_index_L[i]))
-            row_R = row_dict_R.get(int(join_index_R[i]))
-            if(len(result) != 0):
-                result += "\n"
-            result += f"The total estimated cost and number of rows involved in {join_type_L[i]}#{join_index_L[i]} changed from {cost_L} and {row_L} to {cost_R} and {row_R} respectively after switching to {join_type_R[i]}#{join_index_R[i]}"
-            #print(
-            #    f"The total estimated cost and number of rows involved in {join_type_L[i]}#{join_index_L[i]} changed from {cost_L} and {row_L} to {cost_R} and {row_R} respectively after switching to {join_type_R[i]}#{join_index_R[i]}")
-    return result
 
 # "main" function of the explain class that calls the other sub function of the class
 
 
-def generateDifference(leftA, leftL, rightA, rightL, costL, costR, rowL, rowR):
+def generateDifference(leftA, leftL, rightA, rightL, costL, costR, rowL, rowR, startCostListL, startCostListR):
     relation = ["customer", "lineitem", "nation",
                 "orders", "part", "partsupp", "region", "supplier"]
     # print(leftA)
@@ -446,24 +533,33 @@ def generateDifference(leftA, leftL, rightA, rightL, costL, costR, rowL, rowR):
         outputLeft, outputRight, relation)
     scanChangesMessage = findDifferencesBetweenRelations(
         outputLeft, outputRight, relation)
-    leftOrderOfJoinMessage, rightOrderOfJoinMessage, joinChangesMessage = findJoinChanges(
-        joinOrderLeft, joinOrderRight, joinOperator)
+    leftOrderOfJoinMessage, rightOrderOfJoinMessage, joinChangesMessage, costChangesMessage = findJoinChanges(
+        joinOrderLeft, joinOrderRight, joinOperator, costL, costR, rowL, rowR, startCostListL, startCostListR)
 
     print("left side relation join order: ", joinOrderLeft)
     print("right side relation join order: ", joinOrderRight)
     print("join order from both sides: ", joinOperator)
     print("result from table scanning: ", scanChangesMessage)
-    print("old query join order: ", leftOrderOfJoinMessage)
-    print("new query join order: ", rightOrderOfJoinMessage)
-    print("old and new query join differences:", joinChangesMessage)
 
-    #Return Message
+    print(costL)
+    print(startCostListL)
+    print(costR)
+    print(startCostListR)
+
+    # Return Message
     leftOrderOfJoinMessage = " ".join(leftOrderOfJoinMessage)
     rightOrderOfJoinMessage = " ".join(rightOrderOfJoinMessage)
     joinChangesMessage = " ".join(joinChangesMessage)
-    resultMessage = leftOrderOfJoinMessage+"\n"+ rightOrderOfJoinMessage+"\n"+ joinChangesMessage
+    costChangesMessage = " ".join(costChangesMessage)
+
+    resultMessage = leftOrderOfJoinMessage+"\n" + \
+        rightOrderOfJoinMessage+"\n" + joinChangesMessage
     if joinChangesMessage != 'Both the old query and new query join types have no changes':
-        resultMessage += "\n" + findCostAndSize(costL, costR, rowL, rowR, joinOperator)
+        # resultMessage += "\n" + \
+        #     findCostAndSize(costL, costR, rowL, rowR,
+        #                     joinOrderLeft, joinOrderRight, joinOperator)
+        resultMessage += "\n" + \
+            costChangesMessage
     # compare the differences in joinOperator
-    #print(resultMessage)
-    return outputLeft, outputRight,resultMessage
+    # print(resultMessage)
+    return outputLeft, outputRight, resultMessage
