@@ -36,6 +36,7 @@ class MyWidget(QWidget):
         self.queryText1 = SquareLineEdit()
         self.queryText1.setLineWrapColumnOrWidth(
             800)  # Here you set the width you want
+        self.queryText1.setMinimumHeight(200)
         self.queryText1.setLineWrapMode(QTextEdit.LineWrapMode.FixedPixelWidth)
         # self.queryText1.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth)
         self.queryText1.textChanged.connect(self.carryOverText)
@@ -54,7 +55,7 @@ class MyWidget(QWidget):
         self.explainText1.setReadOnly(True)
         self.scrollExplainArea = QScrollArea()
         self.scrollExplainArea.setWidgetResizable(True)
-        self.scrollExplainArea.setMinimumHeight(300)
+        self.scrollExplainArea.setMinimumHeight(150)
         self.scrollExplainArea.setMinimumWidth(300)
         self.scrollExplainArea.setWidget(self.explainText1)
         # explainText1.setDisabled(True)
@@ -81,6 +82,7 @@ class MyWidget(QWidget):
         self.queryText2 = SquareLineEdit()
         self.queryText2.setLineWrapColumnOrWidth(
             800)  # Here you set the width you want
+        self.queryText2.setMinimumHeight(200)
         self.queryText2.setLineWrapMode(QTextEdit.LineWrapMode.FixedPixelWidth)
         self.queryText2.setStyleSheet("color: rgb(255,0,0)")
 
