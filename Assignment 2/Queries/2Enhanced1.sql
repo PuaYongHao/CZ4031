@@ -1,21 +1,25 @@
 select
-	l_returnflag,
-	l_linestatus,
-	sum(l_quantity) as sum_qty,
-	sum(l_extendedprice) as sum_base_price,
-	sum(l_extendedprice * (1 - l_discount)) as sum_disc_price,
-	sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge,
-	avg(l_quantity) as avg_qty,
-	avg(l_extendedprice) as avg_price,
-	avg(l_discount) as avg_disc,
-	count(*) as count_order
+	p_brand as brand,
+	p_type as product_type,
+	p_size as size_of_product,
+	count(distinct ps_suppkey) as no_of_Supplier
 from
-	lineitem
+	supplier,
+	partsupp,
+	part
 where
-	l_shipdate <= date '1998-12-01'
+	s_suppkey = ps_suppkey and
+	p_partkey = ps_partkey and
+	p_brand <> 'Brand#13' and
+	p_type not like 'SMALL%' and
+	p_size in (1, 2, 3, 4, 5, 6, 7, 8) and
+	not s_nationkey <= 10
 group by
-	l_returnflag,
-	l_linestatus
+	p_brand,
+	p_type,
+	p_size
 order by
-	l_returnflag,
-	l_linestatus;
+	no_of_Supplier desc,
+	p_brand,
+	p_type,
+	p_size;

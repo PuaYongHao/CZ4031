@@ -36,6 +36,14 @@ def isJoin(nodeType):
 
 # for each relation/table, generate from the relation node up to the root node
 
+#check if node is a useful for comparison node
+def isNotUsefulNode(nodeType):
+    useless_elements = ["Memoize"]
+    if nodeType.split("#")[0] in useless_elements:
+        return True
+    else:
+        return False
+    
 
 def findSequence(adjMatrix, relation, parent):
     result = [relation, parent]
@@ -62,6 +70,8 @@ def findDifferencesBetweenRelations(outputLeft, outputRight, relation):
         stop = 0
         tempListL = []
         for node in range(0, len(outputLeft[oldList])):
+            if isNotUsefulNode(outputLeft[oldList][node]):
+                break
             if isJoin(outputLeft[oldList][node]):
                 leftOutput.append(tempListL)
                 break
@@ -72,12 +82,14 @@ def findDifferencesBetweenRelations(outputLeft, outputRight, relation):
         stop = 0
         tempListL = []
         for node in range(0, len(outputRight[newList])):
+            if isNotUsefulNode(outputRight[newList][node]):
+                break
             if isJoin(outputRight[newList][node]):
                 rightOutput.append(tempListL)
                 break
             tempListL.append(outputRight[newList][node].split("#")[0])
-    # print("hehe ",leftOutput)
-    # print("hehe ",rightOutput)
+    #print("hehe ",leftOutput)
+    #print("hehe ",rightOutput)
 
     # generate message of what LHS have but RHS dont have
     # e.g. customer-Seq Scan
@@ -88,7 +100,7 @@ def findDifferencesBetweenRelations(outputLeft, outputRight, relation):
                 # found the 2 list to compare
                 tempList = []
                 for eachNode in leftOutput[i]:
-                    if eachNode not in rightOutput[j]:
+                    if i < len(leftOutput) or eachNode not in rightOutput[j]:
                         tempList.append(leftOutput[i][0]+"-"+eachNode)
                         # leftMessage.append(leftOutput[i][0]+"-"+eachNode)
                         # print(leftOutput[i][0]," ",eachNode," don't have")
@@ -103,7 +115,7 @@ def findDifferencesBetweenRelations(outputLeft, outputRight, relation):
                 # found the 2 list to compare
                 tempList = []
                 for eachNode in rightOutput[i]:
-                    if eachNode not in leftOutput[j]:
+                    if i < len(leftOutput) or eachNode not in leftOutput[j]:
                         tempList.append(leftOutput[i][0]+"-"+eachNode)
                         # rightMessage.append(rightOutput[i][0]+"-"+eachNode)
                         # print(rightOutput[i][0]," ",eachNode," don't have")

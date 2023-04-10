@@ -1,20 +1,22 @@
 select
-	c_count,
-	count(*) as custdist
+	p_brand as brand,
+	p_type as product_type,
+	p_size as size_of_product,
+	count(distinct ps_suppkey) as no_of_Supplier
 from
-	(
-		select
-			c_custkey,
-			count(o_orderkey)
-		from
-			customer left outer join orders on
-				c_custkey = o_custkey
-				and o_comment not like '%packages%unusual%'
-		group by
-			c_custkey
-	) as c_orders (c_custkey, c_count)
+	partsupp,
+	part
+where
+	p_partkey = ps_partkey and
+	p_brand <> 'Brand#13' and
+	p_type not like 'SMALL%' and
+	p_size in (1, 2, 3, 4, 5, 6, 7, 8)
 group by
-	c_count
+	p_brand,
+	p_type,
+	p_size
 order by
-	custdist desc,
-	c_count desc;
+	no_of_Supplier desc,
+	p_brand,
+	p_type,
+	p_size;
