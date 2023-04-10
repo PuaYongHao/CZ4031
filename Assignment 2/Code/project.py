@@ -62,7 +62,7 @@ if __name__ == '__main__':
 
     app = Interface.QApplication(sys.argv)
     widget = Interface.MyWidget(password)
-    widget.setTestingMessage(sqlFile)
+    #widget.setTestingMessage(sqlFile)
     widget.show()
     # widget.treeDisplay(result[0][0][0]["Plan"])
     sys.exit(app.exec())
