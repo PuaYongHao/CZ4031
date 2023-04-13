@@ -2,10 +2,6 @@ import psycopg2
 import Interface
 import sys
 
-# This file is for running the whole application
-# TODO
-# Split db connection function away from main function
-
 
 if __name__ == '__main__':
     # Ask them for password?
@@ -33,36 +29,7 @@ if __name__ == '__main__':
             print("Error while connecting to PostgreSQL: ", error)
             # exit()
 
-    # conn.autocommit = True
-    # cursor = conn.cursor()
-
-    # TODO This one need throw inside interface to run this so need set as local variable or something so they can run
-    cursor.execute(
-        f"EXPLAIN (FORMAT JSON) {'''SELECT * from Region, customer,nation Where region.r_regionkey = 0'''}")
-    # f"EXPLAIN (FORMAT JSON) {'''SELECT * from Region'''}")
-    # Example queries
-    # cursor.execute('''SELECT * from Region''')
-    result = cursor.fetchall()
-
-    # TOREMOVE these are testing to see how the json file look like
-    # print(result)
-    # for x in result[0][0][0]["Plan"]:
-    #     if(x != "Plans"):
-    #         print("Key: ", x, " = ", result[0][0][0]["Plan"][x])
-    # for y in result[0][0][0]["Plan"]["Plans"]:
-    #     print("-------------")
-    #     for z in y:
-    #         print("Key: ",z, " = ", y[z])
-    # print(result[0][0][0])
-
-    # TODO This need to shift to interface, no nid do here, either that or init function take in the queries files
-    fd = open('../Queries/2.sql', 'r')
-    sqlFile = fd.read()
-    fd.close()
-
     app = Interface.QApplication(sys.argv)
     widget = Interface.MyWidget(password)
-    #widget.setTestingMessage(sqlFile)
     widget.show()
-    # widget.treeDisplay(result[0][0][0]["Plan"])
     sys.exit(app.exec())

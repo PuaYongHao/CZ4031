@@ -1,10 +1,10 @@
 import sys
 from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtWidgets import QComboBox, QApplication, QWidget, QLabel, QTextEdit, QVBoxLayout, QPushButton, QGridLayout, QScrollArea
+from PyQt6.QtWidgets import QComboBox, QWidget, QLabel, QTextEdit, QPushButton, QGridLayout, QScrollArea, QApplication
 from PyQt6.QtGui import QPixmap
 import graphviz
-import psycopg2
 from explain import generateDifference
+import explain as ex
 
 
 class SquareLineEdit(QTextEdit):
@@ -22,23 +22,20 @@ class MyWidget(QWidget):
 
         MyWidget.connection.autocommit = True
         self.cursor = MyWidget.connection.cursor()
-        # cursor = self.connection.cursor()
 
         self.nodeList = list()
         self.nodeCount = 1
-        # self.setFixedWidth(1000)
 
         self.startCostList = list()
         self.costList = list()
         self.rowList = list()
+        self.adjListWithPlansRowValue = list()
 
         # Query1
         self.queryText1 = SquareLineEdit()
-        self.queryText1.setLineWrapColumnOrWidth(
-            800)  # Here you set the width you want
+        self.queryText1.setLineWrapColumnOrWidth(800)  # Here you set the width you want
         self.queryText1.setMinimumHeight(200)
         self.queryText1.setLineWrapMode(QTextEdit.LineWrapMode.FixedPixelWidth)
-        # self.queryText1.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth)
         self.queryText1.textChanged.connect(self.carryOverText)
 
         self.queryDropDown1 = QComboBox()
@@ -58,25 +55,13 @@ class MyWidget(QWidget):
         self.scrollExplainArea.setMinimumHeight(150)
         self.scrollExplainArea.setMinimumWidth(300)
         self.scrollExplainArea.setWidget(self.explainText1)
-        # explainText1.setDisabled(True)
-
-        # graphVizImage = QPixmap('sid.jpg')
+       
         self.graphVizImage1 = QLabel()
         self.scrollArea1 = QScrollArea()
         self.scrollArea1.setWidgetResizable(True)
         self.scrollArea1.setMinimumHeight(300)
         self.scrollArea1.setMinimumWidth(300)
         self.scrollArea1.setWidget(self.graphVizImage1)
-
-        # self.graphVizImage1 = SquareLineEdit()
-        # self.graphVizImage1.setDisabled(True)
-
-        # query1VL = QVBoxLayout()
-        # query1VL.addWidget(self.queryText1)
-        # query1VL.addWidget(self.queryDropDown1)
-        # query1VL.addWidget(generateButton1)
-        # query1VL.addWidget(explainText1)
-        # query1VL.addWidget(graphVizImage1)
 
         # Query2
         self.queryText2 = SquareLineEdit()
@@ -87,9 +72,6 @@ class MyWidget(QWidget):
         self.queryText2.setStyleSheet("color: rgb(255,0,0)")
 
         self.queryDropDown2 = QComboBox()
-        # self.queryDropDown2.addItem("Where customerID = XXX")
-        # self.queryDropDown2.addItem("Where customerName = XXX")
-        # self.queryDropDown2.addItem("Select * from orders")
         self.queryDropDown2.currentIndexChanged.connect(self.getQuery2)
 
         self.generateButton2 = QPushButton()
@@ -97,28 +79,12 @@ class MyWidget(QWidget):
         self.generateButton2.setEnabled(False)
         self.generateButton2.clicked.connect(self.generateNewOrder)
 
-        # explainText2 = SquareLineEdit()
-        # explainText2.setReadOnly(True)
-        # explainText2.setDisabled(True)
-
-        # self.graphVizImage2 = QPixmap('sid.jpg')
         self.graphVizImage2 = QLabel()
-        # self.graphVizImage2 = QScrollArea()
         self.scrollArea2 = QScrollArea()
         self.scrollArea2.setWidgetResizable(True)
         self.scrollArea2.setMinimumHeight(300)
         self.scrollArea2.setMinimumWidth(300)
         self.scrollArea2.setWidget(self.graphVizImage2)
-
-        # graphVizImage2 = SquareLineEdit()
-        # graphVizImage2.setDisabled(True)
-
-        # query2VL = QVBoxLayout()
-        # query2VL.addWidget(self.queryText2)
-        # query2VL.addWidget(queryDropDown2)
-        # query2VL.addWidget(generateButton2)
-        # query2VL.addWidget(explainText2)
-        # query2VL.addWidget(self.graphVizImage2)
 
         # Create title
         titleLabel = QLabel("Finally started on this project")
@@ -130,15 +96,11 @@ class MyWidget(QWidget):
         mainLayout.addWidget(self.queryText1, 0, 0)
         mainLayout.addWidget(self.queryDropDown1, 1, 0)
         mainLayout.addWidget(self.generateButton1, 2, 0)
-        # mainLayout.addWidget(explainText1, 3, 0)
-        # mainLayout.addWidget(self.graphVizImage1, 3, 0)
         mainLayout.addWidget(self.scrollArea1, 3, 0)
 
         mainLayout.addWidget(self.queryText2, 0, 1)
         mainLayout.addWidget(self.queryDropDown2, 1, 1)
         mainLayout.addWidget(self.generateButton2, 2, 1)
-        # mainLayout.addWidget(explainText2, 3, 1)
-        # mainLayout.addWidget(self.graphVizImage2, 3, 1)
         mainLayout.addWidget(self.scrollArea2, 3, 1)
 
         mainLayout.addWidget(self.scrollExplainArea, 4, 0, 1, 2)
@@ -150,15 +112,8 @@ class MyWidget(QWidget):
         mainLayout.setRowStretch(4, 1)
         mainLayout.setColumnStretch(0, 1)
         mainLayout.setColumnStretch(1, 1)
-        # mainLayout = QHBoxLayout()
-        # mainLayout.addLayout(query1VL)
-        # mainLayout.addLayout(query2VL)
         # Set the main layout for the widget
         self.setLayout(mainLayout)
-
-    def setTestingMessage(self, message):
-        # self.testingMessageLabel.setText(message)
-        self.queryText1.setText(message)
 
     def updateLineEdit(self):
         index = self.queryDropDown1.currentIndex()
@@ -256,7 +211,8 @@ class MyWidget(QWidget):
     def generateOldOrder(self):
         query = self.queryText1.toPlainText()
         self.result1 = self.queryDB(query)
-        self.leftadj, self.leftlist, self.costListL, self.rowListL, self.startCostListL = self.treeDisplay(
+        #print(self.result1["Plan"], 1)
+        self.leftadj, self.leftlist, self.costListL, self.rowListL, self.startCostListL, self.adjListWithPlansRowValueL = self.treeDisplay(
             self.result1["Plan"], 1)
         self.generateButton2.setEnabled(True)
 
@@ -271,20 +227,18 @@ class MyWidget(QWidget):
     def generateNewOrder(self):
         query = self.queryText2.toPlainText()
         self.result2 = self.queryDB(query)
-        print(self.result2["Plan"])
-        self.rightadj, self.rightlist, self.costListR, self.rowListR, self.startCostListR = self.treeDisplay(
+        #print(self.result2["Plan"])
+        self.rightadj, self.rightlist, self.costListR, self.rowListR, self.startCostListR, self.adjListWithPlansRowValueR = self.treeDisplay(
             self.result2["Plan"], 2)
         outputL, outputR, resultMessage = generateDifference(self.leftadj, self.leftlist, self.rightadj,
-                                                             self.rightlist, self.costListL, self.costListR, self.rowListL, self.rowListR, self.startCostListL, self.startCostListR)
+                                                             self.rightlist, self.costListL, self.costListR, 
+                                                             self.rowListL, self.rowListR, self.startCostListL, 
+                                                             self.startCostListR, self.adjListWithPlansRowValueL, self.adjListWithPlansRowValueR)
         self.explainText1.setText(resultMessage)
 
     # print the image of the join order
     def treeDisplay(self, plan, index):
-        # TODO Display the difference in red, maybe split into another function?
         f = graphviz.Graph()
-
-        # query = self.textEdit.toPlainText()
-        # plan = self.dbObj.getQueryPlan(query)
 
         if type(plan) is not dict:
             self.el1.setText(
@@ -297,12 +251,14 @@ class MyWidget(QWidget):
             costList = self.costList
             rowList = self.rowList
             startCostList = self.startCostList
+            adjListWithPlansRowValue = self.adjListWithPlansRowValue
 
             self.nodeCount = 1
             self.nodeList = list()
             self.startCostList = list()
             self.costList = list()
             self.rowList = list()
+            self.adjListWithPlansRowValue = list()
 
             for node in nodeList:
                 name = node.split('#')[0]
@@ -321,20 +277,16 @@ class MyWidget(QWidget):
             if (index == 1):
                 self.graphVizImage1.setPixmap(self.im)
                 self.graphVizImage1.setScaledContents(True)
-                # self.graphVizImage1.setMaximumHeight(400)
                 self.graphVizImage1.setAlignment(
                     Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
 
             else:
                 self.graphVizImage2.setPixmap(self.im)
                 self.graphVizImage2.setScaledContents(True)
-                # self.graphVizImage2.setMaximumHeight(400)
-                # self.graphVizImage2.setFixedHeight(self.im.size().height())
-                # self.graphVizImage2.setFixedWidth(self.im.size().width())
                 self.graphVizImage2.setAlignment(
                     Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
 
-            return adjList, nodeList, costList, rowList, startCostList
+            return adjList, nodeList, costList, rowList, startCostList, adjListWithPlansRowValue
 
     def getAdjList(self, queryPlan, result):
         """
@@ -371,7 +323,6 @@ class MyWidget(QWidget):
                 result[planNode] = [
                     f"{queryPlan['Relation Name']}#{self.nodeCount}"]
             # print("map this ", queryPlan['Node Type'], " to ", queryPlan['Relation Name'])
-            # result[queryPlan['Node Type']] = queryPlan['Relation Name']
             curIterCount = self.nodeCount
             self.nodeCount += 1
             return [result, curIterCount]
@@ -383,7 +334,17 @@ class MyWidget(QWidget):
             # print("parent: ", queryPlan['Node Type'], " and ", self.nodeCount)
             if planNodeType not in self.nodeList:
                 self.nodeList.append(planNodeType)
-
+                
+            #ifplanNodeType is join add it in
+            if ex.isJoin(queryPlan['Node Type']):
+                if('Join Filter' in queryPlan):
+                    self.adjListWithPlansRowValue.append(f"{queryPlan['Node Type']}#{queryPlan['Join Filter']}#{queryPlan['Plans'][0]['Node Type']}|{queryPlan['Plans'][0]['Plan Rows']}#{queryPlan['Plans'][1]['Node Type']}|{queryPlan['Plans'][1]['Plan Rows']}")
+                elif ('Hash Cond' in queryPlan):
+                    self.adjListWithPlansRowValue.append(f"{queryPlan['Node Type']}#{queryPlan['Hash Cond']}#{queryPlan['Plans'][0]['Node Type']}|{queryPlan['Plans'][0]['Plan Rows']}#{queryPlan['Plans'][1]['Node Type']}|{queryPlan['Plans'][1]['Plan Rows']}")
+                elif ('Merge Cond' in queryPlan):
+                    self.adjListWithPlansRowValue.append(f"{queryPlan['Node Type']}#{queryPlan['Merge Cond']}#{queryPlan['Plans'][0]['Node Type']}|{queryPlan['Plans'][0]['Plan Rows']}#{queryPlan['Plans'][1]['Node Type']}|{queryPlan['Plans'][1]['Plan Rows']}")
+                else:
+                    self.adjListWithPlansRowValue.append(f"{queryPlan['Node Type']}##{queryPlan['Plans'][0]['Node Type']}|{queryPlan['Plans'][0]['Plan Rows']}#{queryPlan['Plans'][1]['Node Type']}|{queryPlan['Plans'][1]['Plan Rows']}")  
             self.startCostList.append(
                 f"{queryPlan['Startup Cost']}#{self.nodeCount}")
 
@@ -412,5 +373,4 @@ class MyWidget(QWidget):
                     result[planNodeType] = [subplanNodeType]
 
             # print("finall", result)
-            # return curIterCount (OR, in the 1st iteration, return the final result)
             return [result, curIterCount]

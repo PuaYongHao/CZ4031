@@ -1,30 +1,4 @@
-# natural language
-# switch statement or some shit
-
-# generic
-# nested_loop
-# sequential_scan
-# index_scan
-# hash_join
-# limit
-# merge_join
-# setop
-# sort
-# materialize
-# aggregate
-# subquery_scan
-# unique
-# values_scan
-# group
-# hash
-# function_scan
-# cte_scan
-# append
-
-# TODO
-# Nid do for all the above algo print out some random english text
-# either split into multiple python file that have 1 function to return a string
-# or just do switch statement
+#Explain python do natural language processing + explanation
 
 # check if node is a join operator
 def isJoin(nodeType):
@@ -34,11 +8,10 @@ def isJoin(nodeType):
     else:
         return False
 
+
 # for each relation/table, generate from the relation node up to the root node
 
 # check if node is a useful for comparison node
-
-
 def isNotUsefulNode(nodeType):
     useless_elements = ["Memoize"]
     if nodeType.split("#")[0] in useless_elements:
@@ -576,21 +549,50 @@ def findJoinChanges(joinOrderLeft, joinOrderRight, joinOperator, costL, costR, r
     return leftJoinMessage, rightJoinMessage, joinChangesMessage, costChangesMessage
 
 
-#             result += f"The total estimated cost and number of rows involved in {join_type_L[i]} changed from {cost_L} and {row_L} to {cost_R} and {row_R} respectively after switching to {join_type_R[i]}"
+def generateReasonWithPlanRows(rsList):
+    #Add in reason why the cost change by accessing the number of plans rows
+    #["Nested Loop", "Hash Join", "Merge Join"]
+    if(len(rsList) == 0):
+        return ""
+    message = ""
+    #for each node of node relationship, filter the join
+    for nodeRS in rsList:
+        join,joinfilter,childNode1,childNode2 = nodeRS.split('#')
+        if(len(joinfilter) != 0):
+            joinfilter = "(" + joinfilter + ")"
+        message += "The reason why it use "+ join + " for the join is because "
+        if(join == "Nested Loop"):
+            #need check if equality operator
+            if('>' in joinfilter or '<' in joinfilter or '!=' in joinfilter):
+                message += "the join condition "+ joinfilter +" does not use the equality operator" + "<br>"
+            else:
+                #one of the loop is smaller
+                if childNode1.split('|')[1] > childNode2.split('|')[1]:
+                    message += "the plans row for " + childNode2.split('|')[0] + " is small(" + childNode2.split('|')[1]+") and also the join condition" + joinfilter+ " uses the equality operator" +"<br>"
+                else:
+                    message += "the plans row for " + childNode1.split('|')[0] + " is small(" + childNode1.split('|')[1]+") and also the join condition" + joinfilter+ " uses the equality operator" +"<br>"
+        elif(join == "Hash Join"):
+            message += "the join condition " + joinfilter +" uses the equality operator and that both side of the join are large and the hash fits into the work_mem (The space you configured, 4MB by default)" + "<br>" 
+        elif(join == "Merge Join"):
+            message += "the join condition " + joinfilter +" uses the equality operator and that both side of the join are large, but can be sorted on the join condition efficiently"
+            if('Index Scan' in childNode1 or 'Index Scan' in childNode2):
+                message += "(Theres a Index created for one of the join condition in the database)"
+            message += "<br>"
+    return message
 
 
 # "main" function of the explain class that calls the other sub function of the class
 
 
-def generateDifference(leftA, leftL, rightA, rightL, costL, costR, rowL, rowR, startCostListL, startCostListR):
+def generateDifference(leftA, leftL, rightA, rightL, costL, costR, rowL, rowR, startCostListL, startCostListR, adjListWithPlansRowValueL, adjListWithPlansRowValueR):
     relation = ["customer", "lineitem", "nation",
                 "orders", "part", "partsupp", "region", "supplier"]
-    # print(leftA)
+    #print(leftL)
+    #print(rightL)
     # print("length is ",len(leftA))
     # implement post order traversal to generate the list
     outputLeft = []
     outputRight = []
-    # findSequence(leftA,"orders#7","Seq Scan#7")
     for table in relation:
         # print("now searching: ",table)
         for node in leftA:
@@ -618,31 +620,40 @@ def generateDifference(leftA, leftL, rightA, rightL, costL, costR, rowL, rowR, s
         outputLeft, outputRight, relation)
     leftOrderOfJoinMessage, rightOrderOfJoinMessage, joinChangesMessage, costChangesMessage = findJoinChanges(
         joinOrderLeft, joinOrderRight, joinOperator, costL, costR, rowL, rowR, startCostListL, startCostListR)
+    reasonMessageLeft = generateReasonWithPlanRows(adjListWithPlansRowValueL)
+    reasonMessageRight = generateReasonWithPlanRows(adjListWithPlansRowValueR)
+    
+    
+    # print("left side relation join order: ", joinOrderLeft)
+    # print("right side relation join order: ", joinOrderRight)
+    # print("join order from both sides: ", joinOperator)
+    # print("result from table scanning: ", scanChangesMessage)
 
-    print("left side relation join order: ", joinOrderLeft)
-    print("right side relation join order: ", joinOrderRight)
-    print("join order from both sides: ", joinOperator)
-    print("result from table scanning: ", scanChangesMessage)
-
-    print(costL)
-    print(startCostListL)
-    print(costR)
-    print(startCostListR)
-
+    # print(costL)
+    # print(startCostListL)
+    # print(costR)
+    # print(startCostListR)
+    newspanMessage = "<span style=\"color:#ff0000;\" >"
+    newspanEndMessage = "</span>"
+    oldspanMessage = "<span style=\"color:#000000;\" >"
+    oldspanEndMessage = "</span>"
+    
     # Return Message
     leftOrderOfJoinMessage = " ".join(leftOrderOfJoinMessage)
     rightOrderOfJoinMessage = " ".join(rightOrderOfJoinMessage)
     joinChangesMessage = " ".join(joinChangesMessage)
+    scanChangesMessage = " ".join(scanChangesMessage)
     costChangesMessage = " ".join(costChangesMessage)
+    
 
-    resultMessage = leftOrderOfJoinMessage+"\n" + \
-        rightOrderOfJoinMessage+"\n" + joinChangesMessage
+    resultMessage = oldspanMessage + leftOrderOfJoinMessage+"<br>" +oldspanEndMessage
+    resultMessage += newspanMessage + rightOrderOfJoinMessage+"<br>" + newspanEndMessage
+    resultMessage += newspanMessage + joinChangesMessage + "<br>" +newspanEndMessage
+    
+    resultMessage += newspanMessage + scanChangesMessage+ newspanEndMessage
     if joinChangesMessage != 'Both the old query and new query join types have no changes':
-        # resultMessage += "\n" + \
-        #     findCostAndSize(costL, costR, rowL, rowR,
-        #                     joinOrderLeft, joinOrderRight, joinOperator)
-        resultMessage += "\n" + \
-            costChangesMessage
-    # compare the differences in joinOperator
-    # print(resultMessage)
+        resultMessage += "<br>" + newspanMessage + costChangesMessage + "<br>" + newspanEndMessage
+    
+    resultMessage += oldspanMessage + "For the old query: <br>" + reasonMessageLeft + oldspanEndMessage
+    resultMessage += newspanMessage + "For the new query: <br>" + reasonMessageRight +newspanEndMessage
     return outputLeft, outputRight, resultMessage
