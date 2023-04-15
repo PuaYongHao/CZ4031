@@ -1,4 +1,4 @@
-#Explain python do natural language processing + explanation
+# Explain python do natural language processing + explanation
 
 # check if node is a join operator
 def isJoin(nodeType):
@@ -45,8 +45,6 @@ def findDifferencesBetweenRelations(outputLeft, outputRight, relation):
         stop = 0
         tempListL = []
         for node in range(0, len(outputLeft[oldList])):
-            #if isNotUsefulNode(outputLeft[oldList][node]):
-                #break
             if isJoin(outputLeft[oldList][node]):
                 leftOutput.append(tempListL)
                 break
@@ -57,19 +55,15 @@ def findDifferencesBetweenRelations(outputLeft, outputRight, relation):
         stop = 0
         tempListL = []
         for node in range(0, len(outputRight[newList])):
-            #if isNotUsefulNode(outputRight[newList][node]):
-             #   break
             if isJoin(outputRight[newList][node]):
                 rightOutput.append(tempListL)
                 break
             tempListL.append(outputRight[newList][node].split("#")[0])
-    # print("hehe ",leftOutput)
-    # print("hehe ",rightOutput)
 
     # generate message of what LHS have but RHS dont have
     # e.g. customer-Seq Scan
-    #leftOutput = [['customer', 'Seqq Scan'], ['nation', 'Seq Scan', 'Hash']] #FOR DEBUG
-    #rightOutput = [['customer', 'Seqq Scan'], ['nation', 'Seqq Scan', 'Hash'], ['part', 'Seq Scan','supa hashsu']] #FOR DEBUG
+    # leftOutput = [['customer', 'Seqq Scan'], ['nation', 'Seq Scan', 'Hash']] #FOR DEBUG
+    # rightOutput = [['customer', 'Seqq Scan'], ['nation', 'Seqq Scan', 'Hash'], ['part', 'Seq Scan','supa hashsu']] #FOR DEBUG
     leftMessage = []
     for i in range(0, len(leftOutput)):
         found = 0
@@ -79,11 +73,8 @@ def findDifferencesBetweenRelations(outputLeft, outputRight, relation):
                 # found the 2 list to compare
                 tempList = []
                 for eachNode in leftOutput[i]:
-                    #if i < len(leftOutput) or eachNode not in rightOutput[j]:
                     if (eachNode not in relation) and (eachNode not in rightOutput[j]):
                         tempList.append(leftOutput[i][0]+"-"+eachNode)
-                        # leftMessage.append(leftOutput[i][0]+"-"+eachNode)
-                        # print(leftOutput[i][0]," ",eachNode," don't have")
                 if len(tempList) != 0:
                     leftMessage.append(tempList)
         if found == 0:
@@ -92,7 +83,6 @@ def findDifferencesBetweenRelations(outputLeft, outputRight, relation):
                 if values not in relation:
                     tempList.append(leftOutput[i][0]+"-"+values)
             leftMessage.append(tempList)
-    # print("gap")
     # generate message of what RHS have but LHS dont have
     rightMessage = []
     for i in range(0, len(rightOutput)):
@@ -103,13 +93,8 @@ def findDifferencesBetweenRelations(outputLeft, outputRight, relation):
                 # found the 2 list to compare
                 tempList = []
                 for eachNode in rightOutput[i]:
-                    #print(eachNode," and ",leftOutput[j])
-                    #if i < len(leftOutput) or eachNode not in leftOutput[j]:
-                    #print("hi ",eachNode)
                     if (eachNode not in relation) and (eachNode not in leftOutput[j]):
                         tempList.append(rightOutput[i][0]+"-"+eachNode)
-                        # rightMessage.append(rightOutput[i][0]+"-"+eachNode)
-                        # print(rightOutput[i][0]," ",eachNode," don't have")
                 if len(tempList) != 0:
                     rightMessage.append(tempList)
         if found == 0:
@@ -118,20 +103,18 @@ def findDifferencesBetweenRelations(outputLeft, outputRight, relation):
                 if values not in relation:
                     tempList.append(rightOutput[i][0]+"-"+values)
             rightMessage.append(tempList)
-    # leftMessage = [["customer-Seq Scan","customer-hash"]] #testing debug
-    # rightMessage = [["customer-Index Scan","customer-hash Scan"]] #testing debug
-    #print("1 ",leftMessage)
-    #print("2 ",rightMessage)
+    # leftMessage = [["customer-Seq Scan","customer-hash"]]
+    # rightMessage = [["customer-Index Scan","customer-hash Scan"]]
     finalMessage = []
     if len(leftMessage) == 0 and len(rightMessage) == 0:
         finalMessage.append(
             "Both queries scanning method of tables are the same")
     elif len(leftMessage) != len(rightMessage):
-        if(len(leftMessage) > len(rightMessage)):
-            #left message have a new relation that right side dont have
-            for i in range(0,len(leftMessage)):
+        if (len(leftMessage) > len(rightMessage)):
+            # left message have a new relation that right side dont have
+            for i in range(0, len(leftMessage)):
                 exist = 0
-                for j in range(0,len(rightMessage)):
+                for j in range(0, len(rightMessage)):
                     if leftMessage[i][0].split("-")[0] == rightMessage[j][0].split("-")[0]:
                         exist = 1
                         leftDiff = ""
@@ -143,25 +126,24 @@ def findDifferencesBetweenRelations(outputLeft, outputRight, relation):
                             rightDiff += values.split("-")[1]+", "
                         leftDiff = leftDiff[:-2]
                         rightDiff = rightDiff[:-2]
-                        # print(leftDiff)
-                        # print(rightDiff)
                         finalMessage.append(
-                            "Old query ("+leftDiff+") from ("+table+") table have been changed to ("+rightDiff+")")
-                        
+                            "Old query ("+leftDiff+") from ("+table+") table have been changed to ("+rightDiff+").")
+
                 if exist == 0:
-                    #the table from LHS does not exist in the RHS (new relation)
+                    # the table from LHS does not exist in the RHS (new relation)
                     leftDiff = ""
                     table = leftMessage[i][0].split("-")[0]
                     for values in leftMessage[i]:
                         leftDiff += values.split("-")[1] + ", "
                     leftDiff = leftDiff[:-2]
-                    finalMessage.append("Old query table ("+table+") and it's ("+leftDiff+") have been removed in the New query")
+                    finalMessage.append(
+                        "Old query table ("+table+") and it's ("+leftDiff+") have been removed in the New query.")
 
         else:
-            #right message have a new relation that left side dont have
-            for i in range(0,len(rightMessage)):
+            # right message have a new relation that left side dont have
+            for i in range(0, len(rightMessage)):
                 exist = 0
-                for j in range(0,len(leftMessage)):
+                for j in range(0, len(leftMessage)):
                     if rightMessage[i][0].split("-")[0] == leftMessage[j][0].split("-")[0]:
                         exist = 1
                         leftDiff = ""
@@ -173,19 +155,18 @@ def findDifferencesBetweenRelations(outputLeft, outputRight, relation):
                             leftDiff += values.split("-")[1]+", "
                         leftDiff = leftDiff[:-2]
                         rightDiff = rightDiff[:-2]
-                        # print(leftDiff)
-                        # print(rightDiff)
                         finalMessage.append(
                             "Old query ("+leftDiff+") from ("+table+") table have been changed to ("+rightDiff+")")
-                        
+
                 if exist == 0:
-                    #the table from LHS does not exist in the RHS (new relation)
+                    # the table from LHS does not exist in the RHS (new relation)
                     rightDiff = ""
                     table = rightMessage[i][0].split("-")[0]
                     for values in rightMessage[i]:
                         rightDiff += values.split("-")[1] + ", "
                     rightDiff = rightDiff[:-2]
-                    finalMessage.append("new Query table ("+table+") and it's ("+rightDiff+") have been newly added")
+                    finalMessage.append(
+                        "new Query table ("+table+") and it's ("+rightDiff+") have been newly added")
 
     else:
         for i in range(0, len(leftMessage)):
@@ -200,11 +181,8 @@ def findDifferencesBetweenRelations(outputLeft, outputRight, relation):
                         rightDiff += values.split("-")[1]+", "
                     leftDiff = leftDiff[:-2]
                     rightDiff = rightDiff[:-2]
-                    # print(leftDiff)
-                    # print(rightDiff)
                     finalMessage.append(
                         "Old query ("+leftDiff+") from ("+table+") table have been changed to ("+rightDiff+")")
-
     return finalMessage
 
 # generate the join order
@@ -247,14 +225,10 @@ def findOrderOfJoin(outputLeft, outputRight, relation):
                     if outputLeft[i][j] in joinTypes:
                         joinDict[outputLeft[i][j]] += 1
             tempOutputLeft.append(tempList)
-            # outputLeft[i] = tempList
 
         joinDict = dict(sorted(joinDict.items(), key=lambda x: x[1]))
-        # print(outputLeft)
-        # print("order of the dictionary from smallest to largest value",joinDict)
 
         joinOrder = list(joinDict.keys())
-        # print(joinOrder)
         visited = []
         for i in range(0, len(joinOrder)):
             for j in range(0, len(tempOutputLeft)):
@@ -292,14 +266,10 @@ def findOrderOfJoin(outputLeft, outputRight, relation):
                     if outputRight[i][j] in joinTypesR:
                         joinDictR[outputRight[i][j]] += 1
             tempOutputRight.append(tempList)
-            # outputRight[i] = tempList
 
         joinDictR = dict(sorted(joinDictR.items(), key=lambda x: x[1]))
-        # print(outputRight)
-        # print("order of the dictionary from smallest to largest value",joinDictR)
 
         joinOrderR = list(joinDictR.keys())
-        # print(joinOrderR)
         visitedR = []
         for i in range(0, len(joinOrderR)):
             for j in range(0, len(tempOutputRight)):
@@ -307,12 +277,8 @@ def findOrderOfJoin(outputLeft, outputRight, relation):
                     visitedR.append(tempOutputRight[j][0])
                     rightJoinOrder.append(tempOutputRight[j][0])
 
-    # print("left join order: ",leftJoinOrder)
-    # print("right join order: ",rightJoinOrder)
-
     finalJoinOperator = [joinOrder, joinOrderR]
 
-    # print(finalJoinOperator)
     return leftJoinOrder, rightJoinOrder, finalJoinOperator
 
 # function to generate natural language on which tables are joined together first and the difference in join types
@@ -335,12 +301,6 @@ def findJoinChanges(joinOrderLeft, joinOrderRight, joinOperator, costL, costR, r
         cost.split('#')[0]) for cost in costL}
     cost_dict_R = {int(cost.split('#')[1]): float(
         cost.split('#')[0]) for cost in costR}
-
-    # split the row strings and store them in dictionaries
-    row_dict_L = {int(row.split('#')[1]): float(
-        row.split('#')[0]) for row in rowL}
-    row_dict_R = {int(row.split('#')[1]): float(
-        row.split('#')[0]) for row in rowR}
 
     # e.g. e.g. list = ['customer#10', 'nation#12', 'orders#7']
     # first 2 indexes are joined first then the result is joined with the last index
@@ -382,7 +342,7 @@ def findJoinChanges(joinOrderLeft, joinOrderRight, joinOperator, costL, costR, r
     # 1st list = old query joins
     # 2nd list = new quest joins
     # the join orders are from bottom to top
-    # joinOperator = [['Nested Loop Join#2', 'Nested Loop Join#1'], ['Hash Join#6', 'Hash Join#5']] #FOR DEBUG
+    # joinOperator = [['Nested Loop Join#2', 'Nested Loop Join#1'], ['Hash Join#6', 'Hash Join#5']]
     leftJoin = joinOperator[0]
     rightJoin = joinOperator[1]
     noChangeText = "Both the old query and new query join types have no changes"
@@ -550,32 +510,38 @@ def findJoinChanges(joinOrderLeft, joinOrderRight, joinOperator, costL, costR, r
 
 
 def generateReasonWithPlanRows(rsList):
-    #Add in reason why the cost change by accessing the number of plans rows
-    #["Nested Loop", "Hash Join", "Merge Join"]
-    if(len(rsList) == 0):
+    # Add in reason why the cost change by accessing the number of plans rows
+    # ["Nested Loop", "Hash Join", "Merge Join"]
+    if (len(rsList) == 0):
         return ""
     message = ""
-    #for each node of node relationship, filter the join
+    # for each node of node relationship, filter the join
     for nodeRS in rsList:
-        join,joinfilter,childNode1,childNode2 = nodeRS.split('#')
-        if(len(joinfilter) != 0):
+        join, joinfilter, childNode1, childNode2 = nodeRS.split('#')
+        if (len(joinfilter) != 0):
             joinfilter = "(" + joinfilter + ")"
-        message += "The reason why it use "+ join + " for the join is because "
-        if(join == "Nested Loop"):
-            #need check if equality operator
-            if('>' in joinfilter or '<' in joinfilter or '!=' in joinfilter):
-                message += "the join condition "+ joinfilter +" does not use the equality operator" + "<br>"
+        message += "The reason why it use " + join + " for the join is because "
+        if (join == "Nested Loop"):
+            joinfilter = joinfilter.replace("<>", "!=")
+            # need check if equality operator
+            if ('>' in joinfilter or '<' in joinfilter or '!=' in joinfilter):
+                message += "the join condition " + joinfilter + \
+                    " does not use the equality operator" + "<br>"
             else:
-                #one of the loop is smaller
+                # one of the loop is smaller
                 if childNode1.split('|')[1] > childNode2.split('|')[1]:
-                    message += "the plans row for " + childNode2.split('|')[0] + " is small(" + childNode2.split('|')[1]+") and also the join condition" + joinfilter+ " uses the equality operator" +"<br>"
+                    message += "the plans row for " + childNode2.split('|')[0] + " is small(" + childNode2.split(
+                        '|')[1]+") and also the join condition" + joinfilter + " uses the equality operator" + "<br>"
                 else:
-                    message += "the plans row for " + childNode1.split('|')[0] + " is small(" + childNode1.split('|')[1]+") and also the join condition" + joinfilter+ " uses the equality operator" +"<br>"
-        elif(join == "Hash Join"):
-            message += "the join condition " + joinfilter +" uses the equality operator and that both side of the join are large and the hash fits into the work_mem (The space you configured, 4MB by default)" + "<br>" 
-        elif(join == "Merge Join"):
-            message += "the join condition " + joinfilter +" uses the equality operator and that both side of the join are large, but can be sorted on the join condition efficiently"
-            if('Index Scan' in childNode1 or 'Index Scan' in childNode2):
+                    message += "the plans row for " + childNode1.split('|')[0] + " is small(" + childNode1.split(
+                        '|')[1]+") and also the join condition" + joinfilter + " uses the equality operator" + "<br>"
+        elif (join == "Hash Join"):
+            message += "the join condition " + joinfilter + \
+                " uses the equality operator and that both side of the join are large and the hash fits into the work_mem (The space you configured, 4MB by default)" + "<br>"
+        elif (join == "Merge Join"):
+            message += "the join condition " + joinfilter + \
+                " uses the equality operator and that both side of the join are large, but can be sorted on the join condition efficiently"
+            if ('Index Scan' in childNode1 or 'Index Scan' in childNode2):
                 message += "(Theres a Index created for one of the join condition in the database)"
             message += "<br>"
     return message
@@ -587,32 +553,20 @@ def generateReasonWithPlanRows(rsList):
 def generateDifference(leftA, leftL, rightA, rightL, costL, costR, rowL, rowR, startCostListL, startCostListR, adjListWithPlansRowValueL, adjListWithPlansRowValueR):
     relation = ["customer", "lineitem", "nation",
                 "orders", "part", "partsupp", "region", "supplier"]
-    #print(leftL)
-    #print(rightL)
-    # print("length is ",len(leftA))
     # implement post order traversal to generate the list
     outputLeft = []
     outputRight = []
     for table in relation:
-        # print("now searching: ",table)
         for node in leftA:
             for child in leftA[node]:
                 if child.split("#")[0] == table:
                     outputLeft.append(findSequence(leftA, child, node))
 
     for table in relation:
-        # print("now searching: ",table)
         for node in rightA:
             for child in rightA[node]:
                 if child.split("#")[0] == table:
                     outputRight.append(findSequence(rightA, child, node))
-    # print("order of left tree")
-    # print(outputLeft)
-    # print("")
-    # print("i love this assignment")
-    # print("")
-    # print("order of right tree")
-    # print(outputRight)
 
     joinOrderLeft, joinOrderRight, joinOperator = findOrderOfJoin(
         outputLeft, outputRight, relation)
@@ -622,38 +576,31 @@ def generateDifference(leftA, leftL, rightA, rightL, costL, costR, rowL, rowR, s
         joinOrderLeft, joinOrderRight, joinOperator, costL, costR, rowL, rowR, startCostListL, startCostListR)
     reasonMessageLeft = generateReasonWithPlanRows(adjListWithPlansRowValueL)
     reasonMessageRight = generateReasonWithPlanRows(adjListWithPlansRowValueR)
-    
-    
-    # print("left side relation join order: ", joinOrderLeft)
-    # print("right side relation join order: ", joinOrderRight)
-    # print("join order from both sides: ", joinOperator)
-    # print("result from table scanning: ", scanChangesMessage)
 
-    # print(costL)
-    # print(startCostListL)
-    # print(costR)
-    # print(startCostListR)
     newspanMessage = "<span style=\"color:#ff0000;\" >"
     newspanEndMessage = "</span>"
     oldspanMessage = "<span style=\"color:#000000;\" >"
     oldspanEndMessage = "</span>"
-    
+
     # Return Message
     leftOrderOfJoinMessage = " ".join(leftOrderOfJoinMessage)
     rightOrderOfJoinMessage = " ".join(rightOrderOfJoinMessage)
     joinChangesMessage = " ".join(joinChangesMessage)
     scanChangesMessage = " ".join(scanChangesMessage)
     costChangesMessage = " ".join(costChangesMessage)
-    
 
-    resultMessage = oldspanMessage + leftOrderOfJoinMessage+"<br>" +oldspanEndMessage
+    resultMessage = oldspanMessage + leftOrderOfJoinMessage+"<br>" + oldspanEndMessage
     resultMessage += newspanMessage + rightOrderOfJoinMessage+"<br>" + newspanEndMessage
-    resultMessage += newspanMessage + joinChangesMessage + "<br>" +newspanEndMessage
-    
-    resultMessage += newspanMessage + scanChangesMessage+ newspanEndMessage
+    resultMessage += newspanMessage + joinChangesMessage + "<br>" + newspanEndMessage
+
+    resultMessage += newspanMessage + scanChangesMessage + newspanEndMessage
+
     if joinChangesMessage != 'Both the old query and new query join types have no changes':
-        resultMessage += "<br>" + newspanMessage + costChangesMessage + "<br>" + newspanEndMessage
-    
-    resultMessage += oldspanMessage + "For the old query: <br>" + reasonMessageLeft + oldspanEndMessage
-    resultMessage += newspanMessage + "For the new query: <br>" + reasonMessageRight +newspanEndMessage
+        resultMessage += "<br>" + newspanMessage + \
+            costChangesMessage + "<br>" + newspanEndMessage
+
+    resultMessage += oldspanMessage + "<br>For the old query: <br>" + \
+        reasonMessageLeft + oldspanEndMessage
+    resultMessage += newspanMessage + "For the new query: <br>" + \
+        reasonMessageRight + newspanEndMessage
     return outputLeft, outputRight, resultMessage

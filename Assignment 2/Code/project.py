@@ -27,7 +27,6 @@ if __name__ == '__main__':
         except (Exception, psycopg2.Error) as error:
             # Error handling
             print("Error while connecting to PostgreSQL: ", error)
-            # exit()
 
     app = Interface.QApplication(sys.argv)
     widget = Interface.MyWidget(password)

@@ -33,7 +33,8 @@ class MyWidget(QWidget):
 
         # Query1
         self.queryText1 = SquareLineEdit()
-        self.queryText1.setLineWrapColumnOrWidth(800)  # Here you set the width you want
+        self.queryText1.setLineWrapColumnOrWidth(
+            800)  # Here you set the width you want
         self.queryText1.setMinimumHeight(200)
         self.queryText1.setLineWrapMode(QTextEdit.LineWrapMode.FixedPixelWidth)
         self.queryText1.textChanged.connect(self.carryOverText)
@@ -55,7 +56,7 @@ class MyWidget(QWidget):
         self.scrollExplainArea.setMinimumHeight(150)
         self.scrollExplainArea.setMinimumWidth(300)
         self.scrollExplainArea.setWidget(self.explainText1)
-       
+
         self.graphVizImage1 = QLabel()
         self.scrollArea1 = QScrollArea()
         self.scrollArea1.setWidgetResizable(True)
@@ -211,7 +212,6 @@ class MyWidget(QWidget):
     def generateOldOrder(self):
         query = self.queryText1.toPlainText()
         self.result1 = self.queryDB(query)
-        #print(self.result1["Plan"], 1)
         self.leftadj, self.leftlist, self.costListL, self.rowListL, self.startCostListL, self.adjListWithPlansRowValueL = self.treeDisplay(
             self.result1["Plan"], 1)
         self.generateButton2.setEnabled(True)
@@ -227,12 +227,11 @@ class MyWidget(QWidget):
     def generateNewOrder(self):
         query = self.queryText2.toPlainText()
         self.result2 = self.queryDB(query)
-        #print(self.result2["Plan"])
         self.rightadj, self.rightlist, self.costListR, self.rowListR, self.startCostListR, self.adjListWithPlansRowValueR = self.treeDisplay(
             self.result2["Plan"], 2)
         outputL, outputR, resultMessage = generateDifference(self.leftadj, self.leftlist, self.rightadj,
-                                                             self.rightlist, self.costListL, self.costListR, 
-                                                             self.rowListL, self.rowListR, self.startCostListL, 
+                                                             self.rightlist, self.costListL, self.costListR,
+                                                             self.rowListL, self.rowListR, self.startCostListL,
                                                              self.startCostListR, self.adjListWithPlansRowValueL, self.adjListWithPlansRowValueR)
         self.explainText1.setText(resultMessage)
 
@@ -245,9 +244,7 @@ class MyWidget(QWidget):
                 f'ERROR: Tree visualisation failed. Please check your query.\n{plan}')
         else:
             adjList = self.getAdjList(plan, {})[0]
-            # print("adj List: ",adjList)
             nodeList = self.nodeList
-            # print("Node List: ",nodeList)
             costList = self.costList
             rowList = self.rowList
             startCostList = self.startCostList
@@ -262,11 +259,9 @@ class MyWidget(QWidget):
 
             for node in nodeList:
                 name = node.split('#')[0]
-                # print(node, name)
                 f.node(node, name)
 
             for annotate in adjList:
-                # print(annotate)
                 if len(adjList[annotate]) != 0:
                     for annotateString in adjList[annotate]:
                         f.edge(annotate, annotateString)
@@ -319,10 +314,8 @@ class MyWidget(QWidget):
                 result[planNode].append(
                     f"{queryPlan['Relation Name']}#{self.nodeCount}")
             else:
-                # print("HIII ", subplan)
                 result[planNode] = [
                     f"{queryPlan['Relation Name']}#{self.nodeCount}"]
-            # print("map this ", queryPlan['Node Type'], " to ", queryPlan['Relation Name'])
             curIterCount = self.nodeCount
             self.nodeCount += 1
             return [result, curIterCount]
@@ -331,20 +324,23 @@ class MyWidget(QWidget):
         else:
             # Name the parent node, increment the count
             planNodeType = f"{queryPlan['Node Type']}#{self.nodeCount}"
-            # print("parent: ", queryPlan['Node Type'], " and ", self.nodeCount)
             if planNodeType not in self.nodeList:
                 self.nodeList.append(planNodeType)
-                
-            #ifplanNodeType is join add it in
+
+            # ifplanNodeType is join add it in
             if ex.isJoin(queryPlan['Node Type']):
-                if('Join Filter' in queryPlan):
-                    self.adjListWithPlansRowValue.append(f"{queryPlan['Node Type']}#{queryPlan['Join Filter']}#{queryPlan['Plans'][0]['Node Type']}|{queryPlan['Plans'][0]['Plan Rows']}#{queryPlan['Plans'][1]['Node Type']}|{queryPlan['Plans'][1]['Plan Rows']}")
+                if ('Join Filter' in queryPlan):
+                    self.adjListWithPlansRowValue.append(
+                        f"{queryPlan['Node Type']}#{queryPlan['Join Filter']}#{queryPlan['Plans'][0]['Node Type']}|{queryPlan['Plans'][0]['Plan Rows']}#{queryPlan['Plans'][1]['Node Type']}|{queryPlan['Plans'][1]['Plan Rows']}")
                 elif ('Hash Cond' in queryPlan):
-                    self.adjListWithPlansRowValue.append(f"{queryPlan['Node Type']}#{queryPlan['Hash Cond']}#{queryPlan['Plans'][0]['Node Type']}|{queryPlan['Plans'][0]['Plan Rows']}#{queryPlan['Plans'][1]['Node Type']}|{queryPlan['Plans'][1]['Plan Rows']}")
+                    self.adjListWithPlansRowValue.append(
+                        f"{queryPlan['Node Type']}#{queryPlan['Hash Cond']}#{queryPlan['Plans'][0]['Node Type']}|{queryPlan['Plans'][0]['Plan Rows']}#{queryPlan['Plans'][1]['Node Type']}|{queryPlan['Plans'][1]['Plan Rows']}")
                 elif ('Merge Cond' in queryPlan):
-                    self.adjListWithPlansRowValue.append(f"{queryPlan['Node Type']}#{queryPlan['Merge Cond']}#{queryPlan['Plans'][0]['Node Type']}|{queryPlan['Plans'][0]['Plan Rows']}#{queryPlan['Plans'][1]['Node Type']}|{queryPlan['Plans'][1]['Plan Rows']}")
+                    self.adjListWithPlansRowValue.append(
+                        f"{queryPlan['Node Type']}#{queryPlan['Merge Cond']}#{queryPlan['Plans'][0]['Node Type']}|{queryPlan['Plans'][0]['Plan Rows']}#{queryPlan['Plans'][1]['Node Type']}|{queryPlan['Plans'][1]['Plan Rows']}")
                 else:
-                    self.adjListWithPlansRowValue.append(f"{queryPlan['Node Type']}##{queryPlan['Plans'][0]['Node Type']}|{queryPlan['Plans'][0]['Plan Rows']}#{queryPlan['Plans'][1]['Node Type']}|{queryPlan['Plans'][1]['Plan Rows']}")  
+                    self.adjListWithPlansRowValue.append(
+                        f"{queryPlan['Node Type']}##{queryPlan['Plans'][0]['Node Type']}|{queryPlan['Plans'][0]['Plan Rows']}#{queryPlan['Plans'][1]['Node Type']}|{queryPlan['Plans'][1]['Plan Rows']}")
             self.startCostList.append(
                 f"{queryPlan['Startup Cost']}#{self.nodeCount}")
 
@@ -372,5 +368,4 @@ class MyWidget(QWidget):
                 else:
                     result[planNodeType] = [subplanNodeType]
 
-            # print("finall", result)
             return [result, curIterCount]
